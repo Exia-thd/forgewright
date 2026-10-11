@@ -14,17 +14,23 @@ AVDMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/avdmanager"
 
 # 2. Tải System Image (Android 33 - API 33)
 echo "Đang tải hệ điều hành Android 33..."
-$SDKMANAGER "system-images;android-33;google_apis;x86_64"
+"$SDKMANAGER" "system-images;android-33;google_apis;x86_64"
 
 # 3. Tạo thiết bị ảo
 echo "Đang tạo AVD tên 'ForgewrightTestDevice'..."
-echo "no" | $AVDMANAGER create avd -n ForgewrightTestDevice -k "system-images;android-33;google_apis;x86_64" --force
+echo "no" | "$AVDMANAGER" create avd -n ForgewrightTestDevice -k "system-images;android-33;google_apis;x86_64" --force
 
 # 4. Tạo script khởi chạy background
-cat << 'EOF' > scripts/start-emulator.sh
+LAUNCHER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)/run-local-emulator.mjs"
+mkdir -p scripts
+printf '#!/bin/bash\nLAUNCHER=%q\n' "$LAUNCHER" > scripts/start-emulator.sh
+cat << 'EOF' >> scripts/start-emulator.sh
 #!/bin/bash
-echo "Khởi chạy máy ảo trong chế độ không hiển thị (headless)..."
-$ANDROID_HOME/emulator/emulator -avd ForgewrightTestDevice -no-window -no-audio -no-boot-anim -gpu off &
+set -euo pipefail
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
+cd "$PROJECT_ROOT"
+echo "Khởi chạy máy ảo có admission và cleanup; Ctrl-C để đóng..." >&2
+exec node "$LAUNCHER"
 EOF
 
 chmod +x scripts/start-emulator.sh

@@ -263,6 +263,7 @@ async function withinDeadline<T>(promise: Promise<T>, remainingMs: number): Prom
 }
 
 export class VisualGameHarness {
+  private runState: 'idle' | 'running' | 'uncertain' = 'idle';
   constructor(private readonly port: VisualGameHarnessPort) {}
 
   async plan(request: VisualGameRequest): Promise<VisualGamePlan> {
@@ -294,20 +295,41 @@ export class VisualGameHarness {
   }
 
   async run(request: VisualGameRequest): Promise<VisualGameReceipt> {
-    const plan = await this.plan(request);
-    const deadline = Date.now() + plan.loop.timeoutMs;
-    const remaining = () => deadline - Date.now();
-    const started = await withinDeadline(this.port.adapter.start(plan), remaining());
-    if (!started || typeof started.sessionId !== 'string' || started.sessionId.length === 0) {
-      throw new VisualGameHarnessError('invalid_session_id');
+    if (this.runState !== 'idle') {
+      throw new VisualGameHarnessError(
+        this.runState === 'running' ? 'visual_session_busy' : 'visual_session_uncertain',
+      );
     }
-    const evidenceDigests: string[] = [];
+    this.runState = 'running';
+    const pending = new Set<Promise<unknown>>();
+    let effectsStarted = false;
+    let cleanupFailed = false;
+    const track = <T>(operation: Promise<T>): Promise<T> => {
+      pending.add(operation);
+      void operation.then(
+        () => pending.delete(operation),
+        () => pending.delete(operation),
+      );
+      return operation;
+    };
     try {
+      const plan = await this.plan(request);
+      const deadline = Date.now() + plan.loop.timeoutMs;
+      const effect = <T>(create: () => Promise<T>): Promise<T> => {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) throw new VisualGameHarnessError('visual_loop_timeout');
+        return withinDeadline(track(create()), remaining);
+      };
+      effectsStarted = true;
+      const started = await effect(() => this.port.adapter.start(plan));
+      if (!started || typeof started.sessionId !== 'string' || started.sessionId.length === 0) {
+        throw new VisualGameHarnessError('invalid_session_id');
+      }
+      const evidenceDigests: string[] = [];
       for (let iteration = 1; iteration <= plan.loop.maxIterations; iteration++) {
         const inspection = validateInspection(
-          await withinDeadline(
+          await effect(() =>
             this.port.inspectIteration({ sessionId: started.sessionId, plan, iteration }),
-            remaining(),
           ),
         );
         evidenceDigests.push(inspection.evidenceDigest);
@@ -324,18 +346,16 @@ export class VisualGameHarness {
           };
         }
         if (iteration < plan.loop.maxIterations) {
-          await withinDeadline(
+          await effect(() =>
             this.port.adapter.steer!({
               planDigest: plan.planDigest,
               iteration: iteration + 1,
               evidenceDigest: inspection.evidenceDigest,
               summary: inspection.summary,
             }),
-            remaining(),
           );
         }
       }
-      await withinDeadline(this.port.adapter.interrupt!(), CLEANUP_TIMEOUT_MS);
       return {
         planDigest: plan.planDigest,
         modelId: plan.modelSelection.modelId,
@@ -346,13 +366,24 @@ export class VisualGameHarness {
         workerCount: plan.loop.maxWorkers,
         swarmEnabled: false,
       };
-    } catch (error) {
-      if (this.port.adapter.interrupt) {
-        await withinDeadline(this.port.adapter.interrupt(), CLEANUP_TIMEOUT_MS).catch(
-          () => undefined,
-        );
+    } finally {
+      const unsettledAtCleanup = [...pending];
+      try {
+        if (effectsStarted)
+          await withinDeadline(this.port.adapter.interrupt!(), CLEANUP_TIMEOUT_MS);
+      } catch (error) {
+        cleanupFailed = true;
+        throw error;
+      } finally {
+        // A raced timeout does not cancel the underlying start/inspection.
+        // Keep this instance blocked; interrupt again after late effects settle.
+        if (unsettledAtCleanup.length > 0) {
+          void Promise.allSettled(unsettledAtCleanup)
+            .then(() => withinDeadline(this.port.adapter.interrupt!(), CLEANUP_TIMEOUT_MS))
+            .catch(() => undefined);
+        }
+        this.runState = cleanupFailed || unsettledAtCleanup.length > 0 ? 'uncertain' : 'idle';
       }
-      throw error;
     }
   }
 }

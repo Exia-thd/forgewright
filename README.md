@@ -211,6 +211,14 @@ Managed headless tests keep their bounded runner concurrency and verified teardo
 The rule is included in generated agent instructions. It does not install
 native browser-host enforcement or guarantee cleanup after a host crash.
 
+Managed game playtests now acquire the existing shared host admission slots
+before opening their browser or emulator. The Three.js fixture reuses its page;
+Android uses a supervised foreground launcher; iOS accepts an explicit Shutdown
+UDID and closes only its confirmed owned boot. Uncertain cleanup quarantines
+capacity. [Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources)
+documents the commands and limits. These checks govern the wired launchers;
+native tools outside them and actual Android/iOS host acceptance remain separate.
+
 ### Game fixture and bounded memory
 
 **Local source candidate, not yet published.** Marketplace installation does not include unpublished checkout changes.

@@ -343,6 +343,32 @@ create unavailable tab-control APIs. Enforce it before the agent calls a tool.
 Cleanup after a host crash or forced termination requires host-owned leases or
 teardown support; instruction checks do not prove that runtime behavior.
 
+**Managed game-test entrypoints:**
+
+The Three.js fixture and local Android/iOS launchers use
+`scripts/runtime/game-test-session.mjs` over the existing shared host admission
+broker. They acquire worker and heavy slots before effects; the host permits
+one active heavy job, with per-project worker exclusion. Unknown OS pressure or
+failed admission blocks creation. Browser/emulator/combined reservations are
+1024/2048/3072 MiB estimates, not RSS limits.
+
+An admitted session permits one browser and one emulator only when their roles
+are included in its reservation. Managed page requests reuse one page and
+reject a third before creation; unexpected popup handles are closed and fail
+the run. Popups can briefly exist before detection. The returned Page handles
+remain trusted-test APIs: raw context access and external native browser tools
+are outside this enforcement boundary.
+
+Close all owned resources on success, failure, timeout and cancellation. A
+failed close, unresolved effect or unconfirmed shutdown quarantines capacity;
+never delete its lease to resume work. Android runs in a supervised foreground
+process group. iOS requires an explicit Shutdown UDID, accounts for boot
+uncertainty before the boot call, and shuts down only a confirmed owned boot.
+Pre-existing Booted devices are preserved. Process groups do not contain
+detached escapes or guarantee cleanup after supervisor SIGKILL/host crash.
+Native iOS lifecycle and physical-device performance require their own host
+evidence. See [Game Test Protocol](game-test-protocol.md#managed-browser-and-emulator-resources).
+
 ## Decision Matrix
 
 | Rule Type | Read | Write | Execute | Delete |

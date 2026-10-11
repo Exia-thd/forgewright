@@ -92,6 +92,14 @@
     {
       "path": "skills/_shared/protocols/qa-test-protocol.md",
       "type": "operations"
+    },
+    {
+      "path": "skills/_shared/protocols/game-test-protocol.md",
+      "type": "operations"
+    },
+    {
+      "path": "tests/game/fixtures/threejs-lifecycle/README.md",
+      "type": "operations"
     }
   ],
   "project_docs": {
@@ -111,7 +119,8 @@
     "docs/adr/ADR-agent-plugin-distribution.md",
     "workflows/game-skill-evolution.md",
     "skills/_shared/protocols/guardrail.md",
-    "skills/_shared/protocols/qa-test-protocol.md"
+    "skills/_shared/protocols/qa-test-protocol.md",
+    "skills/_shared/protocols/game-test-protocol.md"
   ],
   "adapters": {
     "git": true,
@@ -142,7 +151,9 @@
       "skills/_shared/protocols/skill-specialization-contract.md",
       "evals/skills/README.md",
       "skills/_shared/protocols/guardrail.md",
-      "skills/_shared/protocols/qa-test-protocol.md"
+      "skills/_shared/protocols/qa-test-protocol.md",
+      "skills/_shared/protocols/game-test-protocol.md",
+      "tests/game/fixtures/threejs-lifecycle/README.md"
     ],
     "exclude": [
       "docs/archive/**",

@@ -4,15 +4,17 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {chromium} from 'playwright';
 import {serve} from './server.mjs';
+import {runGameTest} from '../../../../scripts/runtime/game-test-session.mjs';
+import {createGameBrowser} from '../../../../scripts/runtime/game-test-browser.mjs';
 const output=fileURLToPath(new URL('../../../../.forgewright/runtime/game-host-upgrade/game-render/',import.meta.url));
 mkdirSync(output,{recursive:true});
+const checked=await runGameTest({projectRoot:fileURLToPath(new URL('../../../..',import.meta.url))},async session=>{
 const {server,url,build}=await serve();
-let browser;
+await session.own({close:()=>new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve())),isClosed:()=>!server.listening});
 const errors=[];const screenshots=[];
-try {
- browser=await chromium.launch({headless:true});
- const context=await browser.newContext({viewport:{width:960,height:800},hasTouch:true,deviceScaleFactor:1});
- const page=await context.newPage();
+ const browserType={launch:options=>chromium.launch({...options,...(process.env.FORGEWRIGHT_GAME_CHROMIUM?{executablePath:process.env.FORGEWRIGHT_GAME_CHROMIUM}:{})})};
+ const managed=await createGameBrowser(session,browserType,{viewport:{width:960,height:800},hasTouch:true,deviceScaleFactor:1});
+ const page=await managed.page();
  page.on('pageerror',e=>errors.push(String(e)));
  page.on('console',msg=>{if(msg.type()==='error')errors.push(msg.text());});
  await page.clock.install({time:new Date('2026-01-01T00:00:00Z')});
@@ -47,6 +49,7 @@ try {
  await page.locator('#pause').tap();assert.equal(await state(),'paused');
  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
  await shot('touch-paused');assert.deepEqual(errors,[]);
- writeFileSync(join(output,`${build}.json`),JSON.stringify({build,screenshots,errors,viewports:[[960,800],[390,844]],touch:'emulated',mobilePerformance:'UNVERIFIED',result:'PASS'},null,2)+'\n');
- console.log(JSON.stringify({result:'PASS',build,screenshots}));
-}finally{await browser?.close();await new Promise(resolve=>server.close(resolve));}
+ return {build,screenshots,errors,viewports:[[960,800],[390,844]],touch:'emulated',mobilePerformance:'UNVERIFIED'};
+});
+writeFileSync(join(output,`${checked.result.build}.json`),JSON.stringify({...checked.result,result:'PASS',quiescence:checked.quiescence},null,2)+'\n');
+console.log(JSON.stringify({result:'PASS',...checked.result,quiescence:checked.quiescence}));

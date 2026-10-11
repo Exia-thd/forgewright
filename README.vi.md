@@ -184,6 +184,14 @@ Test headless giữ giới hạn worker của runner và phải xác minh teardo
 Quy tắc nằm trong instruction được sinh cho các agent. Đây là guardrail hành vi,
 chưa cài cơ chế cưỡng chế của browser host hay bảo đảm dọn tab sau khi host crash.
 
+Playtest qua launcher được quản lý giờ phải được cấp slot tài nguyên trước khi
+mở browser hoặc emulator. Fixture Three.js tái sử dụng page; Android chạy ở
+foreground có giám sát; iOS nhận UDID đang Shutdown và chỉ đóng thiết bị do lượt
+test boot thành công. Cleanup chưa xác nhận được sẽ giữ slot ở trạng thái chặn.
+[Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources)
+ghi các lệnh và giới hạn. Cơ chế này áp dụng cho launcher đã nối vào; công cụ
+native chạy ngoài chúng và kiểm chứng Android/iOS thật cần bằng chứng riêng.
+
 ### Game chạy được và bộ nhớ có giới hạn
 
 **Đây là bản source local chưa publish.** Cài từ marketplace chưa bao gồm thay đổi chưa xuất bản trong checkout này.

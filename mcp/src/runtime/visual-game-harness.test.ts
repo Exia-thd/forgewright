@@ -72,6 +72,144 @@ function port(
 }
 
 describe('VisualGameHarness', () => {
+  it('closes a successfully accepted session before returning', async () => {
+    const live = new Set<string>();
+    const runtime = port([{ accepted: true, evidenceDigest: 'b'.repeat(64), summary: 'accepted' }]);
+    runtime.adapter.start = async () => {
+      live.add('owned-session');
+      return { sessionId: 'owned-session' };
+    };
+    runtime.adapter.interrupt = async () => {
+      live.clear();
+    };
+    await new VisualGameHarness(runtime).run(request());
+    expect([...live]).toEqual([]);
+  });
+
+  it('cleans partially started resources when start rejects or returns an invalid ID', async () => {
+    for (const invalid of [false, true]) {
+      const live = new Set<string>();
+      const runtime = port([]);
+      runtime.adapter.start = async () => {
+        live.add('partial-session');
+        if (!invalid) throw new Error('startup failed');
+        return { sessionId: '' };
+      };
+      runtime.adapter.interrupt = async () => {
+        live.clear();
+      };
+      await expect(new VisualGameHarness(runtime).run(request())).rejects.toThrow();
+      expect([...live]).toEqual([]);
+    }
+  });
+
+  it('rejects overlapping starts and does not restart after cleanup failure', async () => {
+    const finishes: Array<() => void> = [];
+    const live = new Set<string>();
+    const runtime = port([]);
+    runtime.adapter.start = async () => {
+      const id = `session-${live.size}`;
+      live.add(id);
+      return { sessionId: id };
+    };
+    runtime.inspectIteration = async () => {
+      await new Promise<void>((resolve) => {
+        finishes.push(resolve);
+      });
+      return { accepted: true, evidenceDigest: 'b'.repeat(64), summary: 'accepted' };
+    };
+    runtime.adapter.interrupt = async () => {
+      throw new Error('close failed');
+    };
+    const harness = new VisualGameHarness(runtime);
+    const running = harness.run(request()).catch((error) => error);
+    while (finishes.length === 0) await new Promise((resolve) => setTimeout(resolve, 1));
+    const overlapping = harness.run(request()).catch((error) => error);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    try {
+      expect(live.size).toBe(1);
+    } finally {
+      finishes.forEach((finish) => finish());
+    }
+    expect(await overlapping).toMatchObject({ code: 'visual_session_busy' });
+    expect(String(await running)).toContain('close failed');
+    await expect(harness.run(request())).rejects.toMatchObject({
+      code: 'visual_session_uncertain',
+    });
+  });
+
+  it('blocks reuse after a timed-out start and interrupts a late-created session', async () => {
+    vi.useFakeTimers();
+    try {
+      let complete!: () => void;
+      const live = new Set<string>();
+      const runtime = port([]);
+      runtime.adapter.start = async () => {
+        await new Promise<void>((resolve) => {
+          complete = resolve;
+        });
+        live.add('late-session');
+        return { sessionId: 'late-session' };
+      };
+      runtime.adapter.interrupt = async () => {
+        live.clear();
+      };
+      const harness = new VisualGameHarness(runtime);
+      const outcome = harness.run(request()).catch((error) => error);
+      await vi.advanceTimersByTimeAsync(90_001);
+      expect(await outcome).toMatchObject({ code: 'visual_loop_timeout' });
+      await expect(harness.run(request())).rejects.toMatchObject({
+        code: 'visual_session_uncertain',
+      });
+      complete();
+      await vi.advanceTimersByTimeAsync(1);
+      expect([...live]).toEqual([]);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('retains uncertainty when late effects settle during the first interrupt', async () => {
+    vi.useFakeTimers();
+    try {
+      let startDone!: () => void;
+      let closeDone!: () => void;
+      let first = true;
+      const live = new Set<string>();
+      const runtime = port([]);
+      runtime.adapter.start = async () => {
+        await new Promise<void>((resolve) => {
+          startDone = resolve;
+        });
+        live.add('late');
+        return { sessionId: 'late' };
+      };
+      runtime.adapter.interrupt = async () => {
+        live.clear();
+        if (first) {
+          first = false;
+          await new Promise<void>((resolve) => {
+            closeDone = resolve;
+          });
+        }
+      };
+      const harness = new VisualGameHarness(runtime);
+      const outcome = harness.run(request()).catch((error) => error);
+      await vi.advanceTimersByTimeAsync(90_001);
+      startDone();
+      await vi.advanceTimersByTimeAsync(1);
+      closeDone();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(await outcome).toMatchObject({ code: 'visual_loop_timeout' });
+      expect([...live]).toEqual([]);
+      await expect(harness.run(request())).rejects.toMatchObject({
+        code: 'visual_session_uncertain',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('builds a provider-neutral locked visual feedback plan', async () => {
     const runtime = port([{ accepted: true, evidenceDigest: 'b'.repeat(64), summary: 'accepted' }]);
     const harness = new VisualGameHarness(runtime);

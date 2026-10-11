@@ -23,9 +23,14 @@ npm --prefix tests/game/fixtures/threejs-lifecycle run test:browser
 npm --prefix tests/game/fixtures/threejs-lifecycle run serve
 ```
 
-Run one task at a time after host admission. The server binds only to loopback
-and serves an explicit file allowlist. Browser testing closes its own browser
-and server in a finally block. No external asset or cloud service is involved.
+Browser testing acquires the shared host worker/heavy slots before creating its
+server or browser. It reuses one page and closes its owned context, browser and
+server before emitting PASS. Cleanup uncertainty quarantines capacity. The
+server binds only to loopback and serves an explicit file allowlist. No external
+asset or cloud service is involved. Unknown OS pressure blocks admission.
+For a separately verified host Chromium, set `FORGEWRIGHT_GAME_CHROMIUM` to its
+absolute executable path; this does not certify the pinned Playwright browser
+revision. These commands do not download a browser or open an interactive browser window.
 The interactive server defaults to `http://127.0.0.1:4173`. Stop it with Ctrl+C.
 
 ## Acceptance and evidence
@@ -45,8 +50,9 @@ The interactive server defaults to `http://127.0.0.1:4173`. Stop it with Ctrl+C.
 Recorded local runs have passed TypeScript, unit and desktop Chromium checks.
 The browser receipt records the served-byte build hash and rendered screenshots.
 Separate schema-v2 verification records bind the exact tested source tree.
-Current upgrade acceptance is tracked separately in
-[canonical project status](../../../../docs/project-state.json).
+Current upgrade acceptance is tracked separately in the canonical
+`docs/project-state.json` metadata, available through the
+[Docs Hub guide](../../../../docs/guides/docs-hub.md).
 
 The observed unit and browser mutations changed the compiled win transition to
 a loss. Each failed its unchanged oracle, restored exact bytes and passed again.

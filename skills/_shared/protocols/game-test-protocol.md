@@ -3,7 +3,7 @@ id: game-test-protocol
 title: Game Test Protocol
 summary: Core protocol for game test protocol.
 status: active
-version: 1.0.0
+version: 1.1.0
 owners: [core]
 triggers: []
 used_by: [all]
@@ -28,6 +28,41 @@ superseded_by: null
 | After QA Engineer (Game) | Gameplay Systems Test | All mechanics are integrated |
 | At Build Gate | Full Game Test Suite | Before build approval |
 | Merge/Deploy | Regression + Contract | Parallel workers merge |
+
+## Managed browser and emulator resources
+
+For ad-hoc game playtests, use the managed entrypoints under
+`scripts/runtime/game-test-session.mjs`; do not repeatedly launch raw browsers,
+background an emulator with `&`, or auto-open Simulator.app/report windows.
+Read [Guardrail Rule 15](guardrail.md)
+for the authoritative admission, ownership, cleanup and external-tool limits.
+Existing project-owned bounded CI runners retain their own concurrency and
+teardown contracts.
+
+```bash
+# One admitted browser/context, one reused page for gameplay and viewport checks.
+npm --prefix tests/game/fixtures/threejs-lifecycle run test:browser
+# After local SDK setup: foreground Android; Ctrl-C requests owned cleanup.
+bash scripts/start-emulator.sh
+# On macOS, select an existing available Shutdown device by its exact UUID.
+node scripts/testing/run-local-simulator.mjs --udid <device-UUID>
+```
+
+The Android setup script generates the managed launcher for the current project;
+run it from that project's root. Simulator discovery is read-only; already
+Booted devices are refused and preserved. No launcher creates a cloud VM or
+deletes/erases simulator devices. Standalone emulator sessions time out after
+30 minutes; the browser fixture defaults to two minutes. Waiting for admission
+is bounded, and a queued/cancelled invocation may not create resources later.
+
+For custom trusted tests, call `runGameTest(options, async session => ...)`,
+`createGameBrowser(session, browserType, contextOptions)`, or
+`createGameSimulator(session, udid)`. Use `resourceKind: 'combined'` for one
+browser plus one emulator in a single session; do not acquire nested heavy
+slots. Register every owned server with `session.own({close, isClosed})`.
+Validate actual teardown before emitting PASS. A resolved harness interrupt
+only proves session interruption, not browser/VM quiescence. Missing provider
+ownership/list/close support is BLOCKED; never fabricate it from a URL match.
 
 ---
 
