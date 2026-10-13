@@ -100,6 +100,18 @@
     {
       "path": "tests/game/fixtures/threejs-lifecycle/README.md",
       "type": "operations"
+    },
+    {
+      "path": "skills/game-designer/SKILL.md",
+      "type": "operations"
+    },
+    {
+      "path": "skills/_shared/protocols/game-studio-pipeline.md",
+      "type": "operations"
+    },
+    {
+      "path": "skills/_shared/protocols/visual-grounding.md",
+      "type": "operations"
     }
   ],
   "project_docs": {
@@ -153,7 +165,10 @@
       "skills/_shared/protocols/guardrail.md",
       "skills/_shared/protocols/qa-test-protocol.md",
       "skills/_shared/protocols/game-test-protocol.md",
-      "tests/game/fixtures/threejs-lifecycle/README.md"
+      "tests/game/fixtures/threejs-lifecycle/README.md",
+      "skills/game-designer/SKILL.md",
+      "skills/_shared/protocols/game-studio-pipeline.md",
+      "skills/_shared/protocols/visual-grounding.md"
     ],
     "exclude": [
       "docs/archive/**",

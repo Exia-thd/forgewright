@@ -153,6 +153,17 @@ Hãy review setup script và config sinh ra; merge rule cần thiết vào proje
 
 ## Đã nâng cấp gì
 
+### Thiết kế game theo phạm vi và art direction đã duyệt
+
+[Game Designer đầy đủ](skills/game-designer/SKILL.md) dùng GDD, research và cây
+tài liệu theo phase hiện tại, tái sử dụng artifact đã duyệt. Express vẫn giữ
+gate sẵn sàng triển khai. Ví dụ feedback tuân theo art direction thay vì bắt
+mọi game dùng gradient, particles, một thời lượng transition hoặc cùng font.
+
+Bản sửa giải quyết mâu thuẫn trong chỉ dẫn nguồn. Research REA chưa bổ sung
+runtime hay flow tái tạo game mới; hiệu quả hành vi agent, độ giống gameplay
+và trải nghiệm người chơi vẫn chưa được chứng minh.
+
 ### Research và nâng cấp skill game dựa trên bằng chứng
 
 [Workflow nâng cấp skill game](workflows/game-skill-evolution.md) nối research

@@ -26,6 +26,46 @@ def _normalized(text: str) -> str:
     return " ".join(text.replace("`", "").split())
 
 
+def test_full_designer_templates_preserve_studio_entry_and_readiness() -> None:
+    """The shipped full overlay must not compete with the studio control plane."""
+    text = _read(DESIGNER.with_name("SKILL.md"))
+    assert "**first skill in Game Build mode**" not in text
+    assert "Fully autonomous. Derive game genre, loop, and economy" not in text
+    assert "Search for 3-5 competitor games" not in text
+    assert "game-studio-pipeline.md" in text
+    for heading in ("## Execution Checklist", "## Output Structure"):
+        section = text[text.index(heading) :].split("```", 1)[0]
+        assert "active phase" in section
+        assert "existing" in section
+    context = _between(
+        text, "## Context & Position in Pipeline", "### Input Classification"
+    )
+    assert "design-ready" in context
+    assert "Technical Setup" in context
+    assert "implementation-ready" in context
+
+
+def test_full_designer_feedback_preserves_approved_visual_authority() -> None:
+    """Reject the specific universal style mandates that conflict with Art/VFX."""
+    text = _read(DESIGNER.with_name("SKILL.md"))
+    for mandate in (
+        "Visual, audio, and haptic response for every player input",
+        "Required Visual Elements (ALL games)",
+        "Multi-step gradients, no flat colors",
+        "Fade in/out (300ms minimum)",
+        "Custom font (Outfit from Google Fonts)",
+        "Gradient + particles",
+        "Menu screen designed (gradient bg",
+        "Typography standard set (Outfit or custom)",
+    ):
+        assert mandate not in text
+    section = _between(text, "## Visual Polish & Game Juice", "## Common Mistakes")
+    assert "approved visual basis" in section
+    assert "Art Director" in section
+    assert "optional examples" in section
+    assert "reduced-motion" in section
+
+
 def test_protocol_defines_the_seven_phase_control_plane() -> None:
     text = _read(PROTOCOL)
     expected_rows = [

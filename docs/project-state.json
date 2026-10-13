@@ -1288,6 +1288,27 @@
   ],
   "backlog": [
     {
+      "id": "game-designer-source-authority",
+      "title": "Reconcile full Game Designer templates with studio and visual authority",
+      "type": "bug",
+      "status": "done",
+      "priority": "high",
+      "owner": "Game skill maintainers",
+      "acceptance": [
+        "Full-game GDD, competitor research, checklist and output-layout templates apply to the active phase and task, reusing valid existing artifacts.",
+        "Express autonomy preserves existing direction approvals and design-ready to implementation-ready studio handoffs.",
+        "Visual feedback examples defer to the approved basis and Art/VFX owners without universal font, gradient, particle or transition-duration requirements.",
+        "LITE overlays, configured routing, phase gates, visual schemas, test oracles and runtime resource management remain unchanged.",
+        "The dry-run full-precommit test uses controlled staged-path input; actual component and full-fallback selection remain covered separately without changing CI policy or assertions.",
+        "Source-distribution checks establish instruction consistency only; improved agent behavior, reconstruction fidelity and player experience remain unverified."
+      ],
+      "references": [
+        {
+          "path": "skills/game-designer/SKILL.md"
+        }
+      ]
+    },
+    {
       "id": "runtime-token-economics-preflight",
       "title": "Identify the active agent runtime and optimize subagent routing with current token prices",
       "type": "feature",

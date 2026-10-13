@@ -160,6 +160,8 @@ def test_precommit_runs_mandatory_docs_continuity_gate() -> None:
     runner._require_python_dependencies = lambda *packages: None
     runner.review = lambda: None
     runner._format_staged = lambda: None
+    # This full-planning fixture must not consume the maintainer's real index.
+    runner._staged_test_paths = lambda: []
     runner.primary_node = "/tmp/fake-node/bin/node"
     runner._node_bin = lambda component, name: f"/{component}/{name}"
     runner._node_module_file = lambda component, relative: Path(

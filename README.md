@@ -180,6 +180,18 @@ Review generated configuration before adoption. A project submodule is still use
 
 ## What's new
 
+### Game design without universal style overrides
+
+The [full Game Designer skill](skills/game-designer/SKILL.md) now scopes GDD,
+research and output templates to the active studio phase and reuses approved
+artifacts. Express mode preserves readiness gates. Feedback examples defer to
+approved art direction instead of requiring gradients, particles, a fixed
+transition duration or one font in every game.
+
+This reconciles conflicting source instructions. REA research has not added a
+runtime integration or new reconstruction workflow; improved agent behavior,
+game fidelity and player experience remain unverified.
+
 ### Evidence-led game skill evolution
 
 The [game skill evolution workflow](workflows/game-skill-evolution.md) connects

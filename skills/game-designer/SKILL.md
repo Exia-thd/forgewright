@@ -43,7 +43,7 @@ You do NOT write engine code. You produce design artifacts — GDDs, economy spr
 > **AI should feel challenging but beatable.** Perfect accuracy feels unfair. Add intentional imperfection.
 
 ### Rule 6: Juice Everything
-> **Every action needs feedback.** Visual, audio, and haptic response for every player input. Close the habit loop immediately, proportionally, and distinctively.
+> **Make player actions and outcomes readable.** Specify feedback that suits the approved direction, platform and accessibility needs; visual, audio and haptic channels are choices, not a mandatory pairing for every input. Keep cues timely, proportionate and distinct.
 
 ### Rule 7: Platform Ergonomics & Layout Safety
 > **Never design a "one-size-fits-all" interface.** Mobile HUDs must respect "Safe Areas" and finger occlusion ("Thumb Zones"). Console HUDs must accommodate the "10-Foot Experience" (large icons, radial menus, D-pad snapping). PC must support info density and custom scaling.
@@ -57,7 +57,7 @@ You do NOT write engine code. You produce design artifacts — GDDs, economy spr
 
 | Mode | Behavior |
 |------|----------|
-| **Express** | Fully autonomous. Derive game genre, loop, and economy from user description. Write complete GDD. |
+| **Express** | Resolve routine design choices autonomously within the active phase and approved scope. Produce the applicable design handoff; preserve existing direction approvals and studio gates. |
 | **Standard** | Surface 2-3 critical decisions — core loop structure, monetization model, primary engagement hook. |
 | **Thorough** | Show full design brief. Ask about target audience, platform, session length, competitive references. |
 | **Meticulous** | Walk through each mechanic. User reviews core loop, progression curve, economy spreadsheet individually. |
@@ -66,7 +66,17 @@ You do NOT write engine code. You produce design artifacts — GDDs, economy spr
 
 ## Context & Position in Pipeline
 
-This skill runs as the **first skill in Game Build mode**, before any engine-specific engineers. It replaces the Product Manager for game projects.
+Game Designer owns game-system design, not the studio control plane. Follow
+[Game Studio Pipeline](../_shared/protocols/game-studio-pipeline.md) for entry,
+phase applicability and gates; reuse valid existing artifacts. The current
+Game Build route selects this skill before engine specialists, but selection
+order does not restart Concept or authorize implementation.
+
+Systems Design produces the design-ready handoff. Technical Setup produces
+implementation-ready before engine code begins. Express changes interaction
+depth, not those handoff or approval requirements. The full-game sections below
+are templates for the applicable design scope, not prerequisites for every
+isolated feature, hotfix or existing-project task.
 
 ### Input Classification
 
@@ -102,7 +112,11 @@ From the user's concept, extract:
 
 ### Step 1.2: Research Competitors
 
-Search for 3-5 competitor games and extract:
+Research competitors when a material design question needs external evidence.
+For a full-game concept, 3-5 relevant games can be a useful starting sample;
+reuse current evidence and scope the investigation to the active question.
+An isolated mechanic change does not require a fresh competitor survey.
+Extract only supported observations, for example:
 
 ```markdown
 ## Competitor Analysis
@@ -731,7 +745,16 @@ When designing game interfaces, apply Fagerholt & Lorentzon's 4-part taxonomy:
 
 ## Visual Polish & Game Juice
 
-Every GDD must include a **Visual Feedback Table**:
+Specify feedback for the affected player actions in the existing GDD/mechanic
+handoff. Game Designer owns player intent and gameplay events; the Art Director
+owns visual direction, and Art/VFX/audio specialists translate that intent
+against the approved visual basis. Follow
+[visual grounding](../_shared/protocols/visual-grounding.md) and the existing
+creative handoff; this table cannot approve or replace them.
+
+The following are optional examples, not prescribed effects, timings or
+particle counts. Choose applicable cues for readability, accessibility,
+reduced-motion behavior and the project's measured rendering budget:
 
 ```markdown
 ## Visual Feedback Specification
@@ -746,18 +769,15 @@ Every GDD must include a **Visual Feedback Table**:
 | Game over | Multi-ring explosion | gameover sfx | Slow fade |
 ```
 
-### Required Visual Elements (ALL games)
+### Feedback Choices Within Approved Direction
 
-1. **Loading screen** — Animated brand splash with progress bar
-2. **Gradient backgrounds** — Multi-step gradients, no flat colors
-3. **Ambient particles** — Subtle floating dots/stars in background
-4. **Screen transitions** — Fade in/out (300ms minimum)
-5. **Button polish** — Hover scale (1.05x), press scale (0.95x)
-6. **Score popups** — Floating text drifting up on scoring
-7. **Destruction effects** — Particle burst on collect/destroy
-8. **Hit feedback** — Squash/stretch or flash on impact
-9. **Combo system** — Visual indicator for consecutive actions
-10. **Premium typography** — Custom font (Outfit from Google Fonts)
+Use the project's approved typography, palette, assets and motion language.
+Flat backgrounds, pixel sprites, silent ambient effects and local fonts can
+be intentional. Loading/progress UI is relevant when an actual loading state
+needs it; screen transitions and button states must suit the platform and
+input mode. Score, hit and combo cues apply to defined gameplay events, not
+new mechanics introduced for decoration. No universal font, gradient,
+particle effect or transition duration overrides the approved basis.
 
 ---
 
@@ -774,11 +794,11 @@ Every GDD must include a **Visual Feedback Table**:
 | 7 | Pay-to-win economy | Trust destroyed | Monetize cosmetics/convenience only |
 | 8 | Session assumptions | Wrong for platform | Research platform norms |
 | 9 | One Bartle type | Limited audience | Address multiple motivations |
-| 10 | No feedback spec | Game feels "floaty" | VFX/SFX/haptic per action |
-| 11 | GenerateTexture primitives | Looks like 2005 Flash | Use detailed textures |
-| 12 | Emoji as sprites | Cross-platform issues | Generate proper sprites |
-| 13 | Flat backgrounds | Placeholder feel | Gradient + particles |
-| 14 | No loading screen | No polish | Brand splash + progress |
+| 10 | No feedback spec | Players cannot read action outcomes | Specify readable cues for affected actions/states within approved direction |
+| 11 | Unapproved placeholder assets | Drift from the intended visual language | Match the approved asset/style contract; primitives may be intentional |
+| 12 | Unverified emoji glyph assets | Rendering varies across platforms | Use approved assets and check target-platform rendering |
+| 13 | Backgrounds that obscure gameplay | Readability suffers | Validate contrast and hierarchy against the approved basis |
+| 14 | Unexplained loading delays | Players cannot tell whether the game is progressing | Provide appropriate progress feedback when loading is observable |
 | 15 | Stat-bloat in skill trees | Choice paralysis, boring choice | Focus on gameplay-changing milestones. Add search filter & color-coding. |
 | 16 | One-size-fits-all layouts | Severe usability failures on mobile/console | Anchor relative to safe zones, use thumb zones, 44x44px target, radial menu/snapping. |
 | 17 | Misaligned inventory choice | Poor pacing & platform friction | Grid-based for visual/survival; List-based for massive stats & D-pad navigation. |
@@ -800,11 +820,15 @@ Every GDD must include a **Visual Feedback Table**:
 
 ## Execution Checklist
 
+Select only items applicable to the active phase and task. Reuse existing
+approved artifacts; this full-game checklist does not restart valid phases or
+require unrelated systems for an isolated mechanic change.
+
 ### Concept & Pillars
 - [ ] Game identity extracted (genre, theme, mood, platform)
 - [ ] 3-5 Design Pillars defined with metrics
 - [ ] Target player profile documented
-- [ ] Competitor analysis completed (3-5 games)
+- [ ] Applicable design questions have current supporting evidence
 
 ### Core Loop Design
 - [ ] Loop hierarchy documented (core → encounter → session → meta)
@@ -826,12 +850,10 @@ Every GDD must include a **Visual Feedback Table**:
 - [ ] Progression system with unlock schedule
 
 ### Visual Polish
-- [ ] Visual Feedback Table complete (every action → VFX + SFX)
-- [ ] Loading/splash screen specified
-- [ ] Menu screen designed (gradient bg, icon, buttons, best score)
-- [ ] Game Over screen designed (stats, retry/menu)
-- [ ] Sprite quality standards defined (no plain rectangles)
-- [ ] Typography standard set (Outfit or custom)
+- [ ] Affected actions/states have readable feedback and accessibility variants
+- [ ] Loading/progress feedback specified when applicable
+- [ ] Applicable menu and end-state feedback follows approved direction
+- [ ] Asset and typography decisions use the approved basis and Art/VFX handoff
 
 ### Accessibility
 - [ ] Colorblind support (all 3 types)
@@ -841,14 +863,17 @@ Every GDD must include a **Visual Feedback Table**:
 - [ ] Difficulty without shame framing
 
 ### Documentation
-- [ ] Complete GDD written
-- [ ] Handoff notes for all engineers
-- [ ] Art director brief included
-- [ ] Audio engineer brief included
+- [ ] Current design scope documented in the existing GDD/mechanic spec
+- [ ] Active-phase handoff contains applicable acceptance and dependencies
+- [ ] Art/audio implications passed to their existing owners when affected
 
 ---
 
 ## Output Structure
+
+Use existing project paths and update the artifacts required by the active phase.
+The following is an optional full-game layout, not a mandatory new tree or a
+requirement to recreate existing documentation:
 
 ```
 .forgewright/game-designer/
