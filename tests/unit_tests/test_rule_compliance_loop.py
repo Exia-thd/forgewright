@@ -663,3 +663,43 @@ def test_isolated_rule_loop_does_not_touch_tracked_runtime_files(
     assert result.returncode == 0, result.stdout + result.stderr
     after = {path: path.read_bytes() if path.exists() else None for path in before}
     assert after == before
+
+
+def test_windows_executable_paths_and_jq_optional_fallback(tmp_path: Path) -> None:
+    script = ROOT / "scripts/lite/policy-check.sh"
+    telemetry_script = ROOT / "scripts/lite/telemetry.sh"
+    ledger_script = ROOT / "scripts/lite/rule-ledger.sh"
+    env = {
+        "FORGEWRIGHT_POLICY_FILE": str(policy(tmp_path)),
+        "FORGEWRIGHT_TELEMETRY_DIR": str(tmp_path / "telemetry"),
+        "FORGEWRIGHT_RULE_LEDGER": str(tmp_path / "ledger.jsonl"),
+    }
+    for cmd in (
+        r"C:\Program Files\Git\cmd\git.exe reset --hard",
+        r"C:\Windows\System32\rm.exe -r -f target",
+        "git.cmd push --force origin main",
+    ):
+        res = run("bash", str(script), "check", "run_command", cmd, env=env)
+        assert res.returncode == 1, (cmd, res.stdout, res.stderr)
+
+    emitted = run(
+        "bash",
+        str(telemetry_script),
+        "emit",
+        "windows.fallback.test",
+        '{"api_key":"secret","ok":true}',
+        env=env,
+    )
+    assert emitted.returncode == 0, emitted.stderr
+    assert "***REDACTED***" in emitted.stdout
+
+    added = run(
+        "bash",
+        str(ledger_script),
+        "add",
+        "HR1",
+        "hit",
+        "windows-ready",
+        env=env,
+    )
+    assert added.returncode == 0, added.stderr

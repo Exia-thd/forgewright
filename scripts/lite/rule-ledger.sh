@@ -34,11 +34,18 @@ log_error() { echo -e "${RED}[RULE-LEDGER] ERROR:${NC} $*" >&2; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 if [[ -n "${FORGEWRIGHT_WORKSPACE:-}" ]]; then
-  if [[ ! -d "$FORGEWRIGHT_WORKSPACE" ]]; then
+  WORKSPACE_PATH="$FORGEWRIGHT_WORKSPACE"
+  if command -v cygpath >/dev/null 2>&1; then
+    WORKSPACE_PATH="$(cygpath -u "$WORKSPACE_PATH" 2>/dev/null)" || {
+      log_error "FORGEWRIGHT_WORKSPACE cannot be normalized."
+      exit 1
+    }
+  fi
+  if [[ ! -d "$WORKSPACE_PATH" ]]; then
     log_error "FORGEWRIGHT_WORKSPACE is not a readable directory."
     exit 1
   fi
-  PROJECT_ROOT="$(cd "$FORGEWRIGHT_WORKSPACE" 2>/dev/null && pwd -P)" || {
+  PROJECT_ROOT="$(cd "$WORKSPACE_PATH" 2>/dev/null && pwd -P)" || {
     log_error "FORGEWRIGHT_WORKSPACE cannot be resolved."
     exit 1
   }
@@ -47,7 +54,13 @@ cd "$PROJECT_ROOT"
 
 LEDGER_FILE="${FORGEWRIGHT_RULE_LEDGER:-.forgewright/rule-ledger.jsonl}"
 
-command -v jq >/dev/null 2>&1 || { log_error "jq is required but not found in PATH."; exit 1; }
+HAS_JQ=0
+command -v jq >/dev/null 2>&1 && HAS_JQ=1
+PYTHON_BIN=""
+if [[ "$HAS_JQ" -eq 0 ]]; then
+  PYTHON_BIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+  [[ -n "$PYTHON_BIN" ]] || { log_error "jq or python is required but not found in PATH."; exit 1; }
+fi
 
 ACTIVE_LOCK_DIR=""
 _release_lock() {
@@ -117,9 +130,13 @@ cmd_add() {
 
   local ts record
   ts="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-  record="$(jq -cn --arg ts "$ts" --arg rule "$rule_id" \
-                   --arg outcome "$outcome" --arg note "$note" \
-                   '{ts: $ts, rule: $rule, outcome: $outcome, note: $note}')"
+  if [[ "$HAS_JQ" -eq 1 ]]; then
+    record="$(jq -cn --arg ts "$ts" --arg rule "$rule_id" \
+                     --arg outcome "$outcome" --arg note "$note" \
+                     '{ts: $ts, rule: $rule, outcome: $outcome, note: $note}')"
+  else
+    record="$("$PYTHON_BIN" -c 'import json,sys; print(json.dumps({"ts":sys.argv[1],"rule":sys.argv[2],"outcome":sys.argv[3],"note":sys.argv[4]},separators=(",",":")))' "$ts" "$rule_id" "$outcome" "$note")"
+  fi
 
   _append_locked "$LEDGER_FILE" "$record"
   log_info "add ${rule_id} [${outcome}] → ${LEDGER_FILE}"

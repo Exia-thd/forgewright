@@ -4,8 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 PYTHON="${ROOT}/.forgewright/local-ci-venv/bin/python"
+if [[ ! -x "$PYTHON" && -x "${ROOT}/.forgewright/local-ci-venv/Scripts/python.exe" ]]; then
+    PYTHON="${ROOT}/.forgewright/local-ci-venv/Scripts/python.exe"
+fi
 if [[ ! -x "$PYTHON" ]]; then
-    PYTHON="$(command -v python3)"
+    PYTHON="$(command -v python3 || command -v python)"
 fi
 PATH="$(dirname "$PYTHON"):$PATH"
 export PATH

@@ -11,41 +11,53 @@
   <img src="https://img.shields.io/badge/version-8.7.1-blue?style=flat-square" alt="Phiên bản 8.7.1" />
   <img src="https://img.shields.io/badge/skills-84-brightgreen?style=flat-square" alt="84 kỹ năng" />
   <img src="https://img.shields.io/badge/verification-local--first-24292f?style=flat-square" alt="Kiểm chứng local-first" />
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-0078d4?style=flat-square" alt="macOS | Linux | Windows" />
   <img src="https://img.shields.io/badge/integration-MCP-7057ff?style=flat-square" alt="Tích hợp MCP" />
 </p>
 
 <p align="center">
+  <a href="#forgewright-là-gì">Dự án là gì</a> ·
+  <a href="#giúp-ích-được-gì-và-hiệu-quả-thực-tế">Hiệu quả</a> ·
+  <a href="#cách-hoạt-động">Cách hoạt động</a> ·
+  <a href="#những-nâng-cấp-gần-đây">Nâng cấp gần đây</a> ·
   <a href="#bắt-đầu">Bắt đầu</a> ·
-  <a href="#dùng-cho-việc-gì">Ứng dụng</a> ·
-  <a href="#đã-nâng-cấp-gì">Nâng cấp</a> ·
   <a href="#kiểm-chứng">Kiểm chứng</a> ·
   <a href="README.md">English</a>
 </p>
 
-**Forgewright là bộ khung điều phối kỹ thuật local-first cho phát triển phần mềm bằng AI.** Repo kết hợp làm rõ yêu cầu, lựa chọn kỹ năng, phân tích code, kiểm soát công cụ, kiểm chứng và lưu ngữ cảnh dự án. Bạn dùng model runtime và công cụ mình cấu hình; không bắt buộc thêm một dịch vụ hosted hay một gói model riêng.
+## Forgewright là gì
 
-Giá trị không nằm ở prompt dài hơn hoặc gọi thật nhiều agent. Nó nằm ở bốn câu hỏi: **cần thay đổi gì, ai được phép thay đổi, kiểm tra bằng cách nào, và điều gì vẫn chưa được chứng minh.**
+**Forgewright là bộ khung điều phối kỹ thuật (engineering harness & orchestrator) local-first, không phụ thuộc nhà cung cấp model, dành cho các AI coding agent** (Codex, Claude Code, Cursor, Antigravity, Gemini CLI/IDE và Forge CLI).
 
-## Vì sao dùng Forgewright
+Thay vì để AI đọc prompt rồi sửa file tùy ý và tự tuyên bố “đã xong”, Forgewright đặt agent vào một quy trình kỹ thuật có kỷ luật:
+- **84 kỹ năng chuyên gia (canonical skills)** trên **24 chế độ vận hành (modes)**: từ Backend, Frontend, Fullstack, Kiến trúc, QA, Bảo mật, DevOps, AI/Data cho tới Mobile và phát triển Game (Unity, Unreal, Godot, Phaser 3, Three.js).
+- **Cổng kiểm soát công cụ trước khi chạy (Pre-tool Guardrails):** Chặn lệnh phá hủy dữ liệu, giới hạn mở dư tab trình duyệt/emulator và áp dụng chính sách an toàn trên cả **macOS, Linux và Windows**.
+- **Nghiệm thu bằng bằng chứng thực thi (Schema-v2 Evidence):** Mọi tuyên bố hoàn thành phải gắn với lệnh kiểm tra thực tế, mã thoát `0`, mã băm `OUTPUT: sha256:...`, tiêu chí nghiệm thu (AC) và chữ ký toàn bộ cây thư mục (`TREE:<sha256>`).
+- **Trí tuệ mã nguồn & tính liên tục dự án:** Kết hợp đồ thị mã nguồn [GitNexus](docs/guides/gitnexus.md), gói ngữ cảnh tối thiểu cho worker và cổng tài liệu tĩnh **Docs Hub** sinh trực tiếp từ trạng thái chuẩn của dự án.
 
-| Vấn đề khi giao việc cho AI | Cơ chế Forgewright bổ sung |
-| --- | --- |
-| Viết code trước khi hiểu đúng yêu cầu | Goal, tiêu chí nghiệm thu, phân loại rủi ro và phạm vi tối thiểu an toàn. |
-| Agent nào cũng đọc toàn bộ lịch sử | Routing gọn, nạp skill khi cần, context có giới hạn và tham chiếu artifact. |
-| Nhiều worker sửa chồng lên nhau | Phân tích dependency, chỉ định phạm vi sở hữu và worktree tách biệt khi được cấu hình. |
-| “Xong” chỉ vì model nói xong | Lệnh kiểm tra của dự án và evidence schema-v2 gắn với AC, command, worktree cụ thể. |
-| Dừng tác vụ nhưng vẫn còn process hoặc hiệu ứng | Lease cho process được sở hữu, hủy tác vụ, theo dõi lifecycle và trạng thái cleanup rõ ràng. |
-| Phiên sau quên quyết định của phiên trước | Checkpoint theo dự án và tài liệu canonical; memory chỉ là ngữ cảnh tham khảo. |
+Mọi số liệu về phiên bản, số lượng kỹ năng và mức độ trưởng thành đều được đối chiếu tự động qua [product manifest](product-manifest.json) và [capability inventory](docs/capability-maturity.json).
 
-**84 kỹ năng, 24 chế độ vận hành, một pipeline bàn giao.** [Product manifest](product-manifest.json) và [capability inventory](docs/capability-maturity.json) là nguồn kiểm tra các thông tin này.
+## Giúp ích được gì và hiệu quả thực tế
+
+| Vấn đề thường gặp khi dùng AI viết code | Cách Forgewright giải quyết | Giá trị mang lại cho đội ngũ |
+| --- | --- | --- |
+| AI sửa code ngay khi chưa hiểu rõ phạm vi và rủi ro | Phân loại độ sâu (`QUICK` / `STANDARD` / `DEEP` / `HARD`), khóa tiêu chí nghiệm thu và phạm vi an toàn tối thiểu trước | Giảm sửa sai lan man; các tác vụ nhạy cảm (thanh toán, bảo mật, schema) bắt buộc qua kiểm tra đa tầng và review độc lập |
+| Tốn hàng nghìn token nạp lại toàn bộ quy tắc mỗi lượt | Bảng định tuyến gọn nhẹ ở `AGENTS.md`/`CLAUDE.md`, chỉ nạp overlay `LITE.md` khi cần và giới hạn gói worker ở 64 KiB | Tiết kiệm context window, giữ agent tập trung vào đúng phạm vi công việc |
+| AI báo “xong” nhưng chưa chạy test hoặc test giả | Cổng `stop_gate.py` + `verify_gate.py` chạy lại lệnh kiểm tra trên cây thư mục cuối cùng và đối chiếu `TREE:<sha256>` | Chặn báo cáo ảo; sửa lỗi bắt buộc chứng minh `RED → GREEN` thực tế |
+| Lệnh shell nguy hiểm hoặc rò rỉ tiến trình/tab trình duyệt | Cổng `policy-check.sh` + Guardrail Rule 15 quản lý lease cho tiến trình, tab trình duyệt và emulator | Chặn `git reset --hard`, `rm -rf` trên cả POSIX lẫn Windows; tự động thu hồi tài nguyên sau khi chạy |
+| Nhiều sub-agent sửa đè lên file của nhau | Hợp đồng sở hữu file tường minh, cô lập bằng git worktree và gói `PLAN_LOCKED` có gắn mã băm | Điều phối song song an toàn khi các phần độc lập; giữ tuần tự khi phụ thuộc |
+| Tài liệu và roadmap lệch pha với code thực tế | Cổng `forge docs gate` + `verify-product-truth.py` + `verify-roadmap-completion.py` trong Local CI | Đảm bảo tài liệu luôn đồng bộ với mọi thay đổi quan trọng trước khi commit |
+
+**Hiệu quả đo đạc thực tế trên bản `v8.7.1`:**
+- **Tốc độ cổng kiểm tra chính sách (`scripts/lite/policy-check.sh`):** Giảm từ ~145 ms xuống **~10 ms** cho lệnh đọc (**nhanh hơn ~14,5×**) và **~29 ms** cho lệnh `git` nhờ loại bỏ hơn 30 tiến trình con `grep`/`cut`/`tr` và xử lý bằng regex nội sinh của Bash.
+- **Tốc độ băm cây thư mục (`worktree_fingerprint` trong `evidence_common.py`):** Giảm từ ~663 ms xuống **~91 ms (warm) / ~176 ms (cold)** (**nhanh hơn ~3,8–7,2×**) nhờ cắt nhánh `node_modules` bằng `git ls-files --directory`, gộp `git rev-parse`, bổ sung stat-cache và loại trừ nhiễu bytecode `__pycache__`.
+- **Sẵn sàng cho Windows + macOS + Linux:** Tự động nhận diện Python trên Windows (`python.exe`, `py.exe -3`, `Scripts/python.exe`), chuẩn hóa đường dẫn `cygpath`, chặn lệnh nguy hiểm dạng `.exe`/`.cmd`/`.bat` và chạy độc lập không cần cài `jq`.
 
 ## Dùng cho việc gì
 
-**Web và công cụ nội bộ:** làm rõ brief, xác định kiến trúc/AC, phối hợp triển khai và review, giữ lại quyết định phục vụ bảo trì. [Product Factory](mcp/src/product-factory/) có các contract cho intent, môi trường thực thi, đánh giá outcome và release.
-
-**Game và ứng dụng mobile:** phối hợp game design, kỹ thuật, art direction, QA, hiệu năng và phát hành. [Game Studio workflow](workflows/game-studio-build.md) đi từ concept đến release. Adapter Unity, Android và web có test local; toolchain, thiết bị, playtest và bằng chứng production vẫn cần kiểm tra theo từng sản phẩm.
-
-**Codebase đang vận hành:** tìm nguyên nhân lỗi, đánh giá phạm vi ảnh hưởng trước refactor, viết test, review bảo mật và cập nhật tài liệu. Chia worker chỉ khi công việc thực sự độc lập; không mặc định song song mọi thứ.
+- **Xây dựng sản phẩm Web, API và SaaS:** Chuyển yêu cầu sản phẩm thành kiến trúc, schema cơ sở dữ liệu, API contract, giao diện và bộ kiểm thử E2E thông qua [Product Factory](mcp/src/product-factory/).
+- **Phát triển Game và ứng dụng Mobile:** Phối hợp xuyên suốt từ thiết kế gameplay, lập trình engine, shader, âm thanh đến QA và playtest bằng [Game Studio workflow](workflows/game-studio-build.md) cùng game mẫu [Signal Dash (Three.js)](tests/game/fixtures/threejs-lifecycle/README.md).
+- **Bảo trì & nâng cấp codebase lớn:** Truy vết lỗi, phân tích phạm vi ảnh hưởng (blast radius) với [GitNexus](docs/guides/gitnexus.md) trước khi sửa hàm dùng chung, kiểm toán chất lượng test theo [QA protocol](skills/_shared/protocols/qa-test-protocol.md) và quản lý tri thức dự án qua [Docs Hub](docs/guides/docs-hub.md).
 
 ### Một yêu cầu thực tế
 
@@ -59,8 +71,6 @@ Triển khai thay đổi nhỏ nhất đủ an toàn, chạy kiểm tra và báo
   file đã sửa · kết quả quan sát được · rủi ro còn lại · cách rollback
 Không publish hoặc deploy khi chưa được duyệt.
 ```
-
-Đây là ví dụ đầu vào, không phải transcript giả về một lần chạy thành công. Kết quả phụ thuộc runtime, dự án, công cụ và verifier được kết nối.
 
 ## Cách hoạt động
 
@@ -79,21 +89,65 @@ flowchart LR
     G --> I[Checkpoint và bảo trì]
 ```
 
-Việc nhỏ được xử lý gọn. Thay đổi bảo mật, billing, concurrency, public contract và release cần kiểm chứng sâu hơn. Model sinh được kết quả chưa đồng nghĩa với sản phẩm đạt yêu cầu; kết thúc vòng retry không biến kết quả chưa xác minh thành kết quả đã xác minh.
+1. **Định cỡ nỗ lực theo rủi ro (Right-size):** Việc nhỏ, cục bộ, dễ hoàn tác đi theo luồng `QUICK` (1–3 bước, 1 lệnh kiểm tra trọng tâm). Tính năng/sửa lỗi thông thường đi theo `STANDARD`. Các thay đổi chạm tới thanh toán (payment/billing/IAP), xác thực, hợp đồng API công khai, đồng thời (concurrency) hoặc phát hành bắt buộc nâng lên `DEEP` và `HARD` ([ESCALATE.md](kernel/ESCALATE.md)).
+2. **Định tuyến chuyên gia theo nhu cầu:** Chỉ nạp overlay `LITE.md` của kỹ năng cần thiết thay vì nạp toàn bộ 84 kỹ năng vào đầu phiên.
+3. **Kiểm chứng từng bước và tại cổng kết thúc:** Mọi lệnh gọi công cụ được kiểm tra qua `.forgewright/execution-policy.yaml` ([POLICY.md](kernel/POLICY.md)), và khi kết thúc lượt, `stop_gate.py` đối chiếu bản ghi schema-v2 trong `.forgewright/verify/` ([VERIFY.md](kernel/VERIFY.md)).
 
-Xem [pipeline reference](docs/pipeline-reference.md) và [canonical runtime ADR](docs/adr/0001-canonical-production-runtime.md) để biết phạm vi thực thi của từng lớp kiểm soát.
+Xem chi tiết tại [pipeline reference](docs/pipeline-reference.md) và [canonical runtime ADR](docs/adr/0001-canonical-production-runtime.md).
 
-## Test phải chứng minh hành vi có thể gãy
+## Những nâng cấp gần đây
 
-[QA protocol](skills/_shared/protocols/qa-test-protocol.md) yêu cầu xác định hành vi đổi, lỗi có thể xảy ra, coverage hiện tại và oracle độc lập trước khi thêm test. Coverage đã đủ thì tái sử dụng; skip mới hoặc nới assertion cần owner cho phép. Khi dọn duplicate/ví dụ không dùng SUT, phải giữ các negative paths độc nhất và phân biệt contract tài liệu phân phối với bằng chứng runtime.
+### 1. Tối ưu hóa đường nóng (Hot-path) & Hỗ trợ toàn diện Windows
 
-Precommit local ghi staged paths và lane được chọn. Thay đổi MCP/CLI giữ Python cross-component contracts; tài liệu giữ cả hai consumer suites. Shared runtime, runner, dependency hoặc path chưa map dùng full precommit fallback. PASS lane không có nghĩa toàn suite đã pass. Lane precommit có phạm vi rõ chỉ deselect một replay toàn roadmap được chỉ đích danh; default pytest vẫn chạy test này. Trước stable release, `node scripts/ci/local-ci.mjs full` chạy trực tiếp toàn bộ roadmap verifier và tránh lặp replay đó trong bước Python. Type check, emit, Docs Hub, formatter và review vẫn bắt buộc. Lý do chọn lane và thời gian nằm trong `.forgewright/reports/local-ci/`.
+- **Kiểm tra chính sách tức thời, không phụ thuộc `jq`:** [policy-check.sh](scripts/lite/policy-check.sh), [telemetry.sh](scripts/lite/telemetry.sh) và [rule-ledger.sh](scripts/lite/rule-ledger.sh) phân tích cấu hình trực tiếp bằng Bash, tự động dò `python3`/`python`/`py.exe -3` trên Windows lẫn POSIX, chuẩn hóa `FORGEWRIGHT_WORKSPACE` qua `cygpath` và tự fallback sang Python khi máy không có `jq`.
+- **Chặn lệnh phá hủy định dạng Windows:** Bộ phân tích cấu trúc lệnh chuẩn hóa dấu `\\` và hậu tố `.exe`/`.cmd`/`.bat`, chặn chính xác các lệnh như `C:\\Program Files\\Git\\cmd\\git.exe reset --hard` hoặc `git.cmd push --force`.
+- **Tăng tốc `worktree_fingerprint` & làm sạch `.forgewright/`:** [evidence_common.py](scripts/lite/evidence_common.py) dùng `git ls-files --directory` để cắt nhánh thư mục `node_modules` và runtime ngay từ tầng C của Git, lưu đệm chữ ký stat cho file lớn/ổn định, loại trừ `__pycache__` và tránh cảnh báo giả `HARD` khi cập nhật các file hướng dẫn gốc (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`).
+
+### 2. Đóng gói Plugin cho Codex & Claude + Behavioral Skill Quality Engine
+
+Cùng một nguồn `skills/` được đóng gói thành plugin chuẩn cho cả **Codex** và **Claude Code** ([plugin manifest](plugin.json)) với cơ chế nạp kỹ năng theo ngữ cảnh và hook `PreToolUse` chỉ hoạt động khi người dùng chủ động bật ([auto-bootstrap.mjs](hooks/auto-bootstrap.mjs)). [Skill Quality Engine](evals/skills/README.md) đo lường **baseline → current → candidate**, biên dịch gói ngữ cảnh tối thiểu `PLAN_LOCKED` cho worker và phân loại lỗi (`hypothesis_wrong`, `implementation_wrong`, `environment_wrong`, `architecture_wrong`).
+
+### 3. Vòng lặp bằng chứng: Quan sát, Ngữ cảnh và Học có kiểm soát (ECC)
+
+Bổ sung cơ chế quan sát theo từng dự án ([Instinct System](skills/instinct-system/SKILL.md)), gói ngữ cảnh phụ trợ giới hạn 3 vòng / 64 KiB cho worker, công cụ MCP `fw_record_learning_candidate` (chỉ tạo đề xuất chờ duyệt) và bàn giao phiên có thể tiếp tục ([kiến trúc ECC](docs/architecture.md#evidence-gated-learning-and-worker-context-protocols)):
+
+```sh
+npm run check:observer
+npm run bench:ecc
+npm run verify:ecc
+python3 scripts/runtime/research_decision.py --help
+python3 scripts/runtime/resumable_handoff.py --help
+```
+
+### 4. Chọn làn test thông minh, Guardrail trình duyệt & Chuẩn hóa Game Studio
+
+- **Chọn làn kiểm thử bảo toàn ([local-ci.py](scripts/ci/local-ci.py)):** Precommit tự động chọn làn test phù hợp (MCP, CLI, Docs) kèm hợp đồng kiểm tra chéo Python, giữ fallback toàn diện khi sửa runtime chung và áp dụng [QA test protocol](skills/_shared/protocols/qa-test-protocol.md).
+- **Guardrail quản lý tab trình duyệt & thiết bị test game:** [Guardrail Rule 15](skills/_shared/protocols/guardrail.md#15-browser-tab-lifecycle--deny-fail-closed) giới hạn tái sử dụng 1 tab tương tác (tối đa 2 tab toàn tác vụ) và bắt buộc dọn dẹp; [Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources) cấp phát slot cho Three.js, Android emulator và iOS simulator.
+- **Game Designer & tiến hóa kỹ năng dựa trên bằng chứng:** [Game Designer](skills/game-designer/SKILL.md) và [workflow nâng cấp skill game](workflows/game-skill-evolution.md) tôn trọng art direction đã duyệt theo từng pha thay vì áp đặt một công thức hiệu ứng cứng nhắc; đi kèm fixture chơi được [Signal Dash](tests/game/fixtures/threejs-lifecycle/README.md), [hướng dẫn test game](tests/game/README.md) và [cài đặt Unity MCP](docs/unity-mcp-setup.md).
+- **Giới hạn bộ nhớ đệm MCP & định tuyến System-1:** Cache MCP giới hạn 512 KiB/entry, 2 MiB/project, 8 MiB/process; định tuyến ngữ nghĩa tiếng Việt/Anh nội bộ ([tool-efficiency.md](skills/_shared/protocols/tool-efficiency.md)) không cần khóa API ngoài.
+
+### 5. Pi Worker tùy chọn (experimental, tắt mặc định)
+
+[Tích hợp Pi](integrations/pi/) cung cấp tùy chọn chạy worker cô lập (`@earendil-works/pi-agent-core@0.85.1`) dưới sự kiểm soát của Forgewright: ngân sách theo tài khoản, patch đối chiếu mã băm, hủy tác vụ và bộ điều phối tài nguyên SQLite (192 MiB/worker, 128 MiB/verifier). Xem chi tiết tại [Pi ADR](docs/adr/ADR-pi-worker-runtime.md).
+
+```bash
+npm --prefix integrations/pi ci --ignore-scripts --no-audit --no-fund
+npm run build && npm run build:cli
+npm --prefix integrations/pi run test:all
+```
+
+Chạy từ dự án cha có gắn submodule:
+
+```bash
+node forgewright/src/cli/dist/index.js delegate on --worker pi --provider openai-codex --auth-source codex --model <exact-codex-model-id>
+node forgewright/src/cli/dist/index.js delegate status --worker pi
+node forgewright/src/cli/dist/index.js delegate run --worker pi --contract task.json
+node forgewright/src/cli/dist/index.js delegate resources
+```
 
 ## Bắt đầu
 
-### 1. Cài Forgewright như plugin (khuyến nghị)
-
-Forgewright giờ có một nguồn plugin dùng chung cho **Codex** và **Claude Code**. Plugin cài entry workflow và specialist skills mà không bắt buộc thêm một gói model riêng.
+### 1. Cài đặt dưới dạng Plugin cho Codex hoặc Claude Code (khuyến nghị)
 
 **Codex CLI**
 
@@ -109,17 +163,11 @@ claude plugin marketplace add buiphucminhtam/forgewright
 claude plugin install forgewright@forgewright-marketplace --scope user
 ```
 
-Sau khi cài, mở session mới và giao việc bình thường; description dạng trigger-only giúp host chỉ nạp skill phù hợp khi cần. `forgewright` là entry/alias workflow nên số specialist canonical vẫn là **84 kỹ năng**.
+Kiểm tra cài đặt plugin trong môi trường cô lập: `npm run verify:plugins`.
 
-Plugin theo hướng **skills-first + consent-gated**. Gói plugin có một `PreToolUse` hook bootstrap nhỏ và bị giới hạn, nhưng chỉ cài plugin thì **không** sửa project, cài MCP, bật Pi, dò credential hay khởi động local runtime. Nếu chưa có global bootstrap policy do người dùng bật, hook sẽ thoát mà không thay đổi repository. Maintainer có thể test cài đặt trong HOME tạm, không đụng profile thật:
+### 2. Cài đặt bộ công cụ đầy đủ & Docs Hub (macOS, Linux, Windows)
 
-```bash
-npm run verify:plugins
-```
-
-### 2. Build full local toolchain (nâng cao)
-
-Cần **Node.js 22+**, **Python 3.11+** và Git. Pi tùy chọn cần **Node.js 22.19+**. Clone repo khi cần Forge CLI, Docs Hub, MCP, local gates hoặc phát triển framework:
+Yêu cầu **Node.js 22+**, **Python 3.11+** và Git:
 
 ```bash
 git clone https://github.com/buiphucminhtam/forgewright.git
@@ -130,18 +178,16 @@ npm run build:cli
 node src/cli/dist/index.js --help
 ```
 
-Auto-bootstrap cần đồng ý bật policy và trust hook trong host. Nên bắt đầu với mode `automation`, `--allow-root` cụ thể, Pi disabled và không chọn MCP client. Phạm vi gồm các repo con đủ điều kiện. Đọc [hướng dẫn auto-bootstrap](docs/guides/auto-bootstrap.md) trước khi bật. Cài đặt, trust và hook chạy xong chưa chứng minh project sẵn sàng. Cần kiểm tra receipt và index sau prompt native thật. Kết quả trên profile macOS cô lập trước đây không chứng nhận bản source hoặc cache vừa cập nhật.
-
-Có thể init/onboard một dự án local mà chưa gọi model:
+Khởi tạo/onboard dự án bất kỳ mà không tốn lượt gọi model, hoặc dựng cổng tài liệu **Docs Hub** ([hướng dẫn auto-bootstrap](docs/guides/auto-bootstrap.md), [hướng dẫn Docs Hub](docs/guides/docs-hub.md)):
 
 ```bash
 node src/cli/dist/index.js --json init /path/to/your-project
 node src/cli/dist/index.js --json onboard /path/to/your-project
+node src/cli/dist/index.js docs build .
+node src/cli/dist/index.js docs doctor . --strict
 ```
 
-### 3. Pin toàn bộ framework vào project (nâng cao)
-
-Nếu team cần runtime Forgewright được pin theo repo cùng local MCP setup, vẫn dùng Git submodule:
+### 3. Gắn cố định vào dự án bằng Git Submodule (nâng cao)
 
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forgewright.git forgewright
@@ -149,200 +195,56 @@ git submodule update --init --recursive
 bash forgewright/scripts/forgewright-mcp-setup.sh
 ```
 
-Hãy review setup script và config sinh ra; merge rule cần thiết vào project thay vì ghi đè rule sẵn có. Submodule vẫn hữu ích khi chính project cần pin framework source cố định, nhưng không còn là điều kiện để dùng global-policy auto-bootstrap.
-
-## Đã nâng cấp gì
-
-### Thiết kế game theo phạm vi và art direction đã duyệt
-
-[Game Designer đầy đủ](skills/game-designer/SKILL.md) dùng GDD, research và cây
-tài liệu theo phase hiện tại, tái sử dụng artifact đã duyệt. Express vẫn giữ
-gate sẵn sàng triển khai. Ví dụ feedback tuân theo art direction thay vì bắt
-mọi game dùng gradient, particles, một thời lượng transition hoặc cùng font.
-
-Bản sửa giải quyết mâu thuẫn trong chỉ dẫn nguồn. Research REA chưa bổ sung
-runtime hay flow tái tạo game mới; hiệu quả hành vi agent, độ giống gameplay
-và trải nghiệm người chơi vẫn chưa được chứng minh.
-
-### Research và nâng cấp skill game dựa trên bằng chứng
-
-[Workflow nâng cấp skill game](workflows/game-skill-evolution.md) nối research
-nguồn gốc, **đánh giá impact trước khi sửa**, tạo candidate, so sánh
-baseline/current/candidate, review, cập nhật README Anh/Việt và commit/push trong
-phạm vi được cấp quyền. Ưu tiên tính đúng đắn của gameplay và game feel, sau đó
-là VFX và hiệu năng trên thiết bị mục tiêu. Thay đổi mindset được đánh giá qua
-quyết định quan sát được và kiểm tra hồi quy ở các vai trò bị ảnh hưởng.
-
-Mỗi lần chạy xử lý một câu hỏi; có thể kết thúc không thay đổi hoặc chỉ rõ bằng
-chứng còn thiếu. Flow dùng công cụ research/đánh giá skill hiện có, chưa cài
-evaluator hay bật agent chạy định kỳ. Chạy theo lịch cần host, ngân sách và nơi
-lưu handoff được cấu hình riêng. Test desktop/web không chứng minh hiệu năng
-trên điện thoại thật hoặc cải thiện trải nghiệm của người chơi.
-
-Observer kiểm tra project root trước khi ghi health metadata. Root không tồn
-tại hoặc là file sẽ trả trạng thái degraded trong bộ nhớ, không tự tạo thư mục
-project và không treo khi nhận đường dẫn `/proc` không tồn tại.
-
-### Guardrail chống mở dư browser tab
-
-[Guardrail Rule 15](skills/_shared/protocols/guardrail.md#15-browser-tab-lifecycle--deny-fail-closed)
-bắt buộc agent tái sử dụng một tab thuộc task, tối đa hai tab tương tác đang mở cho cả
-parent và worker. Mở tab tạm cần xác minh ID và khả năng liệt kê/đóng tab;
-thiếu thì dùng fetch hoặc artifact đã lưu. Agent phải dọn tab khi xong, lỗi
-hoặc hủy; cleanup thất bại sẽ chặn mở thêm. Chỉ giữ tối đa một tab preview
-khi người dùng yêu cầu rõ ràng.
-Test headless giữ giới hạn worker của runner và phải xác minh teardown.
-Quy tắc nằm trong instruction được sinh cho các agent. Đây là guardrail hành vi,
-chưa cài cơ chế cưỡng chế của browser host hay bảo đảm dọn tab sau khi host crash.
-
-Playtest qua launcher được quản lý giờ phải được cấp slot tài nguyên trước khi
-mở browser hoặc emulator. Fixture Three.js tái sử dụng page; Android chạy ở
-foreground có giám sát; iOS nhận UDID đang Shutdown và chỉ đóng thiết bị do lượt
-test boot thành công. Cleanup chưa xác nhận được sẽ giữ slot ở trạng thái chặn.
-[Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources)
-ghi các lệnh và giới hạn. Cơ chế này áp dụng cho launcher đã nối vào; công cụ
-native chạy ngoài chúng và kiểm chứng Android/iOS thật cần bằng chứng riêng.
-
-### Game chạy được và bộ nhớ có giới hạn
-
-**Đây là bản source local chưa publish.** Cài từ marketplace chưa bao gồm thay đổi chưa xuất bản trong checkout này.
-
-[Signal Dash](tests/game/fixtures/threejs-lifecycle/README.md) là game Three.js nhỏ với seed, bước mô phỏng cố định, bàn phím/touch, thắng/thua, pause và restart. Bộ kiểm tra biên dịch ví dụ skill, dùng input browser thật và lưu ảnh gắn build hash. Sau build và test, chạy `npm --prefix tests/game/fixtures/threejs-lifecycle run serve` để chơi local.
-
-Cache kết quả MCP giới hạn 512 KiB mỗi entry, 2 MiB mỗi project và 8 MiB chung trong một process MCP. Entry không dùng hết hạn sau năm phút. Đây là giới hạn byte được hạch toán, không phải trần RSS hoặc thao tác xóa dữ liệu nguồn. [Game test guide](tests/game/README.md) tách fixture chạy được khỏi template. [Unity setup](docs/unity-mcp-setup.md) dùng Unity Test Framework đúng project, còn Editor và hiệu năng mobile thật vẫn cần kiểm chứng riêng.
-
-### Plugin Codex/Claude + chất lượng skill có thể đo
-
-Forgewright không còn bắt buộc người dùng clone/submodule chỉ để có workflow: cùng một `skills/` source được đóng gói thành plugin cho Codex và Claude. Không copy 80+ skill sang hai bộ riêng nên tránh drift giữa harness.
-
-| Nâng cấp | Lợi ích |
-| --- | --- |
-| Skill Quality Engine | So sánh **baseline → current → candidate** bằng trigger accuracy, required/forbidden behavior, pressure/rationalization, abstention, tool call, context bytes và latency. Có regression thì không promote. |
-| Trigger-only metadata | Description chỉ nói **khi nào dùng skill**; workflow nằm trong body, giúp routing gọn hơn. |
-| Minimal worker packet | `PLAN_LOCKED` compile thành context tối thiểu có digest, goal/plan/task/scope/base binding; không nhét parent accounting vào worker. |
-| Scoped review | Review task chỉ xem phạm vi task; mở rộng branch/release phải có final-review intent hoặc cross-cutting risk cụ thể. |
-| Plan-scoped state | Runtime state tách theo `goal_id + plan_digest + base SHA`; success dọn sạch, failure giữ lại để debug/resume. |
-| Failure classification | Phân biệt `hypothesis_wrong`, `implementation_wrong`, `environment_wrong`, `architecture_wrong`; cùng cách làm fail hai lần thì không retry biến thể mù. |
-
-Framework eval là deterministic/provider-neutral. Chưa có benchmark model thật thì không tuyên bố chắc chắn giảm token, tăng chất lượng hay nhanh hơn bao nhiêu.
-
-### Pi worker tùy chọn, vẫn do Forgewright kiểm soát
-
-[Tích hợp Pi](integrations/pi/) không thay Hermes, dispatcher hiện có hay quyền sở hữu goal/AC của Forgewright.
-
-| Nâng cấp | Hành vi |
-| --- | --- |
-| SDK được pin | Lockfile độc lập cho `@earendil-works/pi-agent-core@0.85.1`; cài root không tự cài gói Pi. |
-| Canonical host bridge | Dùng gateway model/tool, containment, lifecycle và trajectory ledger hiện có. `start()` trả session; `wait()` quản lý kết quả cuối. |
-| Quyền được tách khỏi task | Model, account, policy, tool registry và approval do host quyết định; nội dung task không tự cấp quyền. |
-| Budget theo tài khoản | Nhiều workspace dùng chung account không được tách để vượt hạn mức. Chưa dispatch thì hoàn reservation; đã gọi nhưng chưa rõ chi phí thì giữ lại. |
-| Deadline và cancellation | Kết quả muộn không mở lại task đã đóng; hủy tác vụ hoàn cả khoản chưa dispatch dù callback kiểm tra scope bị treo. |
-| Context và receipt | Bảo toàn AC và binding hiện tại; usage/giá còn thiếu được ghi là unavailable, không phải 0. |
-| Gate đánh giá và rollback | So sánh báo cáo đối chứng; canary tắt mặc định, chỉ một worker hoạt động trong controller, có kill switch và quarantine. |
-
-**Trạng thái: experimental, tắt mặc định và bật chủ động theo project.** Lệnh `delegate` đã nối Pi worker thực tế từ project cha: đọc file, patch có before-hash và chạy verifier do host duyệt. Dùng quyền truy cập Codex/Pi OAuth hiện có hoặc model server loopback; không cần TypeSafe key, không tự chuyển sang API trả tiền. Analysis pilot không tool vẫn tồn tại nhưng không phải đường chạy coding worker.
-
-```bash
-npm --prefix integrations/pi ci --ignore-scripts --no-audit --no-fund
-npm run build
-npm run build:cli
-npm --prefix integrations/pi run test:all
-```
-
-Sau khi build CLI/MCP, chạy từ **project cha có submodule**:
-
-```bash
-node forgewright/src/cli/dist/index.js delegate on --worker pi --provider openai-codex --auth-source codex --model <exact-codex-model-id>
-node forgewright/src/cli/dist/index.js delegate status --worker pi
-node forgewright/src/cli/dist/index.js delegate run --worker pi --contract task.json
-node forgewright/src/cli/dist/index.js delegate resources
-# node forgewright/src/cli/dist/index.js delegate cancel <run-id>
-```
-
-Cấu hình nằm trong `.production-grade.yaml` của project cha; giữ các mục không liên quan. `current` chỉ là tiện ích khi model hiện tại tương thích Codex và không có prefix provider; custom provider hoặc route kiểu `provider/model` sẽ bị từ chối thay vì bị hiểu nhầm thành OpenAI. Để ổn định, nên dùng explicit `openai-codex` như lệnh ở trên. Quyền subscription được đọc, không sao chép/refresh token của ứng dụng khác; hết hạn trả `pi_auth_required`. Không thêm phí dịch vụ không có nghĩa thuê bao hay quota hiện có là miễn phí vô hạn. Sandbox cho verifier hiện yêu cầu macOS và lệnh đơn process; chưa hỗ trợ npm/Unity build có process con. Đường `delegate run` có quản lý tài nguyên tạm từ chối worker Agy cũ vì chưa có contract admission/cleanup tương thích; không tự fallback sang Agy. Nền tảng chưa hỗ trợ phải báo rõ. `ready` chỉ xác nhận điều kiện khởi chạy, không thay cho kết quả task thật. [Pi ADR](docs/adr/ADR-pi-worker-runtime.md) có mẫu contract, provider local, cancellation và các giới hạn.
-
-### Context gọn hơn, trạng thái dự án rõ hơn
-
-Routing System-1 dùng rules tiếng Việt/Anh có giới hạn, cache chính xác tùy chọn và từ chối chọn khi yêu cầu mơ hồ. Không import/gọi Jev, không cần `TYPESAFE_API_KEY`, không tải classifier hay gọi thêm model để chọn skill. Đây là tinh thần chọn trong shortlist của Jev, không phải model Jev được đổi tên.
-
-Bộ cấp tài nguyên SQLite dùng chung giới hạn hai worker và một verifier nặng, giảm còn một worker trên host tối đa 8 GiB RAM. Admission xét pressure, tải OS, reservation, headroom và swap activity. Trên macOS, bộ nhớ tức thời được tách khỏi cache có thể thu hồi theo ước lượng. Không suy ra thiếu RAM chỉ từ free pages.
-
-Mức **192 MiB cho Pi worker** và **128 MiB cho verifier đơn process** là budget điều phối, không phải trần RSS hay số đo build bất kỳ. Broker tự thoát sau 15 giây rảnh. Cleanup chỉ xử lý tài nguyên có ownership, giữ nguyên ứng dụng và phiên chưa lưu của người dùng. Mức tiết kiệm toàn build và giảm nhiệt vẫn chưa được chứng minh.
-
-**Docs Hub** build trang HTML local có tìm kiếm từ Markdown/JSON được duyệt. Cấu trúc dự án, roadmap, blocker và flow lấy từ nguồn canonical, không phải một dashboard cập nhật thủ công khác.
-
-```bash
-node src/cli/dist/index.js docs build .
-node src/cli/dist/index.js docs doctor . --strict
-```
-
-Mở `.forgewright/docs-hub/site/index.html`. [Hướng dẫn Docs Hub](docs/guides/docs-hub.md) có đăng ký đa dự án, privacy allowlist và export Obsidian.
-
 ## Năng lực và độ trưởng thành
 
-**Beta** nghĩa là có kiểm chứng tự động local, chưa đồng nghĩa đủ bằng chứng production. **Experimental** còn thiếu bằng chứng production hoàn chỉnh. **Docs-only** là tích hợp/workflow được mô tả, không phải cam kết runtime production.
+Nhãn độ trưởng thành tuân theo [capability inventory](docs/capability-maturity.json): **Beta** là đã có kiểm chứng tự động local, **Experimental** là đang thử nghiệm/chưa đủ bằng chứng production, và **Docs-only** là quy trình/tích hợp tài liệu hóa.
 
-| Nhóm | Maturity | Giá trị chính |
+| Nhóm năng lực | Độ trưởng thành | Giá trị cốt lõi |
 | --- | --- | --- |
-| Code Intelligence / GitNexus | Docs-only integration | Đồ thị quan hệ và đánh giá ảnh hưởng trước refactor; index có thể thiếu hoặc cũ. |
-| Autonomous Testing Stack | Beta | Test của dự án, property-based testing, mutation và evidence gắn AC; không sửa oracle chỉ để pass. |
-| Persistent Cognitive Memory / FluxMem | Experimental | Truy xuất ngữ cảnh local; file và checkpoint hiện tại vẫn là nguồn thật. |
-| Parallel Skill Dispatch | Experimental | Worker có phạm vi riêng; công việc phụ thuộc vẫn xử lý tuần tự. |
-| Multi-Project Hub | Docs-only management integration | Hướng tích hợp quản lý đa dự án; tách biệt với Docs Hub static đã có. |
-| Token Tracking & Cost Analytics | Beta | Usage, reservation và dữ liệu benchmark; phân biệt số đo, ước tính và unavailable. |
-| MCP Tool Sandbox | Beta application controls | Policy, containment và xử lý output; không phải OS sandbox hay bảo đảm chống mọi prompt injection. |
-| ASIP | Experimental legacy workflow | Lưu bài học hữu ích nhưng không tự sửa shared rules; stuck rule vẫn có hiệu lực. |
-| Runtime Lifecycle Guard | Beta | Lease, reuse và cleanup process được sở hữu; không tự thu hồi process ngoài quyền quản lý. |
-| Game Studio Control Plane | Beta optional pack | Handoff theo phase; build, playtest, thiết bị và phát hành cần bằng chứng riêng. |
-| Token Efficiency / Jev spirit | Experimental | Routing rules/cache local EN/VI, không key/model phụ; abstain khi mơ hồ. |
-| Pi Worker | Experimental, opt-in | CLI từ project cha, scoped patch/verifier, cancellation và governor đa project; không tự migrate production. |
-| Codex & Claude Plugin Distribution | Beta | Plugin manifests + shared entry skill + lazy discovery; hook có trong gói nhưng mặc định không có side effect lên project/MCP/runtime trước global opt-in. |
-| Behavioral Skill Quality Engine | Experimental | Pressure/rationalization eval, metadata lint, packet/review compiler và promotion gate; model benchmark thật vẫn là evidence riêng. |
-
-Nguồn trạng thái chi tiết: [capability inventory](docs/capability-maturity.json) và [active roadmap](docs/active-roadmap.md).
+| Code Intelligence / GitNexus | Docs-only | Đồ thị quan hệ mã nguồn và phân tích ảnh hưởng trước khi sửa ([hướng dẫn](docs/guides/gitnexus.md)) |
+| Autonomous Testing Stack | Beta | Kiểm thử gắn AC, property-based testing và bảo vệ test oracle ([hướng dẫn](docs/guides/testing-stack.md)) |
+| Persistent Cognitive Memory / FluxMem | Experimental | Truy xuất ngữ cảnh theo dự án; bằng chứng hiện tại luôn ưu tiên hơn memory |
+| Parallel Skill Dispatch | Experimental | Chia làn worker độc lập có kiểm soát phạm vi file; giữ tuần tự khi phụ thuộc |
+| Multi-Project Hub | Docs-only | Định hướng quản trị đa dự án tách biệt với Docs Hub tĩnh hiện có |
+| Token Tracking & Cost Analytics | Beta | Theo dõi chi phí, hạn mức và benchmark ([ForgeBench](src/cli/src/bench/)) |
+| MCP Tool Sandbox | Beta | Kiểm soát chính sách, phạm vi và đầu ra công cụ ở tầng ứng dụng |
+| ASIP | Experimental | Lưu bài học kinh nghiệm có kiểm duyệt và quy tắc dừng khi lặp lỗi ([Kernel](AGENTS.md)) |
+| Runtime Lifecycle Guard | Beta | Quản lý lease và thu hồi tiến trình thuộc quyền sở hữu ([ADR](docs/adr/ADR-010-runtime-lifecycle-guard.md)) |
+| Game Studio Control Plane | Beta | Quy trình bàn giao theo pha cho dự án game ([workflow](workflows/game-studio-build.md)) |
+| Token Efficiency / System-1 Routing | Experimental | Định tuyến EN/VI nội bộ có giới hạn, tự dừng khi yêu cầu mơ hồ |
+| Optional Pi Worker Pilot | Experimental, tắt mặc định | Worker cô lập có kiểm soát ngân sách và điều phối tài nguyên đa dự án |
+| Codex & Claude Plugin Distribution | Beta | Nguồn plugin chung, nạp kỹ năng thông minh và auto-bootstrap có xin phép ([ADR](docs/adr/ADR-agent-plugin-distribution.md)) |
+| Behavioral Skill Quality Engine | Experimental | Đánh giá hành vi kỹ năng và cổng kiểm duyệt trước khi nâng cấp ([evals](evals/skills/README.md)) |
 
 ## Kiểm chứng
 
-Bản nâng cấp game/resource đã có aggregate gate và Chromium desktop pass ở các snapshot được ghi nhận. **Chưa nghiệm thu xong toàn bộ upgrade** vì còn final-tree HARD gate mới và native bootstrap/index/receipt thật. Cache đã cài không đồng nghĩa live activation thành công. Xem [trạng thái canonical](docs/project-state.json) và receipt hiện hành. Kết quả cũ không chứng nhận source vừa sửa, cloud, Unity hay hiệu năng mobile thật.
+Mọi cổng kiểm chứng đều chạy trực tiếp trên máy local. Xem [trạng thái chuẩn của dự án](docs/project-state.json) và [roadmap completion manifest](docs/roadmap-completion.json) (tách bạch rõ **implementation, integration, activation, production evidence và measured outcome**).
 
 ```bash
-npm run lint
-npm run build
-npm test
-npm run typecheck:cli
-npm run build:cli
+npm run lint && npm run build && npm test
+npm run typecheck:cli && npm run build:cli
 npm run ci:docs
 npm run verify:product-truth
 npm run verify:roadmap
 npm run verify:plugins
+python3 scripts/ci/verify-readme.py
 npm run ci:local
 ```
 
-Chạy bộ Pi tùy chọn bằng lệnh ở phần trên: gồm contract, runtime dùng SDK thật và workflow có owner gate trong các process Node riêng. `python3 scripts/ci/verify-readme.py` kiểm tra hai trang giới thiệu và chạy init/onboard trong dự án dùng thử, không gọi model. Các gate là lệnh local của dự án; hosted CI có thể gọi lại chúng nhưng không phải điều kiện bắt buộc.
+### Ranh giới tin cậy
 
-[Completion manifest](docs/roadmap-completion.json) tách **implementation, integration, activation, production evidence và measured outcome**. Test pass, commit có chữ ký, và sản phẩm được nghiệm thu là ba việc khác nhau.
-
-## Ranh giới tin cậy
-
-Core không phụ thuộc một provider. Thực thi ở trong hệ sinh thái provider đã chọn. Local-first không đồng nghĩa dữ liệu luôn ở trên máy: model từ xa có thể nhận prompt, code được chọn và tool result. Dùng runtime local phù hợp khi dữ liệu phải ở lại thiết bị.
-
-Containment ở cấp ứng dụng, không thay OS sandbox. Callback được host tin cậy vẫn có quyền của host. Hash giúp phát hiện dữ liệu không khớp, không chứng thực trước người tấn công cùng quyền user. Các đường tương thích và user override không được thực thi đồng nhất trên mọi client.
-
-Bật Pi production, live adaptive routing hoặc cho process tự trị cần qua gate riêng. Xem [SECURITY.md](SECURITY.md) và [runtime ADR](docs/adr/0001-canonical-production-runtime.md).
+Thực thi nằm trong hệ sinh thái model/provider bạn cấu hình; nếu dùng model đám mây, prompt và đoạn code được chọn vẫn gửi tới provider đó trừ khi cấu hình model nội bộ. Kiểm soát công cụ ở tầng ứng dụng không thay thế OS sandbox, và chữ ký `review-2` không khóa mật mã giúp phát hiện sai lệch dữ liệu nhưng không chống giả mạo từ cùng tài khoản người dùng. Xem thêm tại [SECURITY.md](SECURITY.md) và [release readiness](docs/process/release-readiness.md).
 
 ## Tài liệu và đóng góp
 
 | Tài liệu | Nội dung |
 | --- | --- |
-| [Product overview](docs/product-overview.md) | Phạm vi và định hướng sản phẩm. |
-| [Architecture](docs/architecture.md), [pipeline](docs/pipeline-reference.md) | Thành phần, quyền sở hữu và luồng thực thi. |
-| [Init/onboard](docs/guides/forge-init-onboard.md), [Docs Hub](docs/guides/docs-hub.md) | Bắt đầu và quản lý tài liệu theo nguồn thật. |
-| [Visual grounding](skills/_shared/protocols/visual-grounding.md) | Design direction dựa trên reference và bằng chứng đã kiểm tra. |
-| [Game Studio](workflows/game-studio-build.md), [Pi](docs/adr/ADR-pi-worker-runtime.md) | Workflow game và kiến trúc worker tùy chọn. |
-| [Maturity](docs/capability-maturity.json), [roadmap](docs/active-roadmap.md), [changelog](CHANGELOG.md) | Đã có gì, đang thử nghiệm gì, còn thiếu gì. |
+| [Product overview](docs/product-overview.md) | Phạm vi, các môi trường hỗ trợ và mô hình vận hành |
+| [Architecture](docs/architecture.md), [pipeline](docs/pipeline-reference.md) | Kiến trúc hệ thống, quyền sở hữu và luồng thực thi |
+| [Init/onboard](docs/guides/forge-init-onboard.md), [Docs Hub](docs/guides/docs-hub.md) | Khởi tạo dự án và cổng tài liệu tĩnh |
+| [Visual grounding](skills/_shared/protocols/visual-grounding.md) | Quy chuẩn thiết kế giao diện và art direction dựa trên bằng chứng |
+| [Active roadmap](docs/active-roadmap.md), [Changelog](CHANGELOG.md) | Lộ trình hiện tại, các điểm nghẽn và lịch sử phát hành |
 
-Đóng góp nên có vấn đề cụ thể, thay đổi đúng phạm vi và lệnh chứng minh kết quả. Giữ nguyên behavioral test; bugfix cần tái hiện lỗi; cập nhật tài liệu canonical và chạy gate local trước pull request. Không commit credential, dữ liệu runtime sinh ra hay trạng thái workspace cá nhân.
-
-Báo lỗi/đề xuất tại [GitHub issues](https://github.com/buiphucminhtam/forgewright/issues); báo bảo mật theo [SECURITY.md](SECURITY.md). Kiểm tra khai báo license của từng package và dependency trước khi phân phối lại, chẳng hạn [khai báo MIT của CLI](src/cli/package.json).
+Báo lỗi hoặc đề xuất tính năng tại [GitHub issues](https://github.com/buiphucminhtam/forgewright/issues); báo cáo bảo mật theo [SECURITY.md](SECURITY.md). Kiểm tra license của từng gói (như [khai báo MIT của CLI](src/cli/package.json)) trước khi phân phối lại.
 
 **Tăng sức làm việc. Bàn giao bằng bằng chứng.**

@@ -30,11 +30,18 @@ log_error() { echo -e "${RED}[TELEMETRY] ERROR:${NC} $*" >&2; }
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 if [[ -n "${FORGEWRIGHT_WORKSPACE:-}" ]]; then
-  if [[ ! -d "$FORGEWRIGHT_WORKSPACE" ]]; then
+  WORKSPACE_PATH="$FORGEWRIGHT_WORKSPACE"
+  if command -v cygpath >/dev/null 2>&1; then
+    WORKSPACE_PATH="$(cygpath -u "$WORKSPACE_PATH" 2>/dev/null)" || {
+      log_error "FORGEWRIGHT_WORKSPACE cannot be normalized."
+      exit 1
+    }
+  fi
+  if [[ ! -d "$WORKSPACE_PATH" ]]; then
     log_error "FORGEWRIGHT_WORKSPACE is not a readable directory."
     exit 1
   fi
-  PROJECT_ROOT="$(cd "$FORGEWRIGHT_WORKSPACE" 2>/dev/null && pwd -P)" || {
+  PROJECT_ROOT="$(cd "$WORKSPACE_PATH" 2>/dev/null && pwd -P)" || {
     log_error "FORGEWRIGHT_WORKSPACE cannot be resolved."
     exit 1
   }
@@ -43,7 +50,13 @@ cd "$PROJECT_ROOT"
 
 TELEMETRY_DIR="${FORGEWRIGHT_TELEMETRY_DIR:-.forgewright/telemetry}"
 
-command -v jq >/dev/null 2>&1 || { log_error "jq is required but not found in PATH."; exit 1; }
+HAS_JQ=0
+command -v jq >/dev/null 2>&1 && HAS_JQ=1
+PYTHON_BIN=""
+if [[ "$HAS_JQ" -eq 0 ]]; then
+  PYTHON_BIN="$(command -v python3 2>/dev/null || command -v python 2>/dev/null || true)"
+  [[ -n "$PYTHON_BIN" ]] || { log_error "jq or python is required but not found in PATH."; exit 1; }
+fi
 
 ACTIVE_LOCK_DIR=""
 _release_lock() {
@@ -101,7 +114,8 @@ cmd_emit() {
 
   # jq validates and recursively redacts secret-bearing fields before either
   # persistence or stdout. Never echo the rejected payload on an error path.
-  if ! record="$(printf '%s' "$payload" \
+  if [[ "$HAS_JQ" -eq 1 ]]; then
+    if ! record="$(printf '%s' "$payload" \
       | jq -cse --arg ts "$ts" --arg event "$event_type" \
            'def redact:
               walk(
@@ -119,8 +133,33 @@ cmd_emit() {
             else
               {ts: $ts, event: $event, data: (.[0] | redact)}
             end' 2>/dev/null)"; then
-    log_error "Payload must be exactly one valid JSON object."
-    exit 1
+      log_error "Payload must be exactly one valid JSON object."
+      exit 1
+    fi
+  else
+    if ! record="$("$PYTHON_BIN" - "$ts" "$event_type" "$payload" <<'PYEOF' 2>/dev/null
+import json, re, sys
+ts, event, raw = sys.argv[1], sys.argv[2], sys.argv[3]
+secret_re = re.compile(r"(^|[_-])(api[_-]?key|secret|token|password|auth|credential)([_-]|$)", re.I)
+def redact(v):
+    if isinstance(v, dict):
+        return {k: ("***REDACTED***" if secret_re.search(str(k)) else redact(val)) for k, val in v.items()}
+    if isinstance(v, list):
+        return [redact(x) for x in v]
+    return v
+dec = json.JSONDecoder()
+s = raw.strip()
+if not s:
+    raise SystemExit(1)
+obj, idx = dec.raw_decode(s)
+if s[idx:].strip() or not isinstance(obj, dict):
+    raise SystemExit(1)
+print(json.dumps({"ts": ts, "event": event, "data": redact(obj)}, separators=(",", ":")))
+PYEOF
+    )"; then
+      log_error "Payload must be exactly one valid JSON object."
+      exit 1
+    fi
   fi
 
   _append_locked "$file" "$record"

@@ -10,6 +10,7 @@ import re
 import shlex
 import stat
 import subprocess
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable
@@ -62,7 +63,7 @@ _FINGERPRINT_RUNTIME_DIRS = frozenset(
 # Reproducible dependency caches may contain tens of thousands of ignored files.
 # They are excluded only from the ignored-file scan; explicitly tracked files
 # under these directories remain part of the exact worktree fingerprint.
-_FINGERPRINT_IGNORED_DEPENDENCY_DIR_NAMES = frozenset({"node_modules"})
+_FINGERPRINT_IGNORED_DEPENDENCY_DIR_NAMES = frozenset({"node_modules", "__pycache__"})
 
 _FINGERPRINT_RUNTIME_FILES = frozenset(
     {
@@ -83,6 +84,10 @@ _FINGERPRINT_RUNTIME_FILES = frozenset(
         ".forgewright/verification-events.jsonl",
     }
 )
+_GENERATED_KERNEL_DOCS = frozenset({"AGENTS.md", "CLAUDE.md", "GEMINI.md"})
+_LARGE_FILE_CACHE_THRESHOLD = 65536
+_STAT_CACHE_MATURITY_NS = 2_000_000_000
+_MEMORY_STAT_CACHE: dict[str, tuple[int, dict[str, list[Any]]]] = {}
 
 _SECRET_PATTERNS = (
     (re.compile(r"sk-[a-zA-Z0-9]{20,}"), "sk-[REDACTED]"),
@@ -769,7 +774,63 @@ def _ignored_dependency_cache_path(path: str) -> bool:
     )
 
 
-def _actual_record(workspace: Path, relative: str) -> str:
+def _load_stat_cache(workspace: Path) -> dict[str, list[Any]]:
+    cache_dir = workspace / ".forgewright" / "cache"
+    cache_file = cache_dir / "fingerprint-stat-cache.json"
+    try:
+        if cache_dir.is_symlink() or not cache_dir.is_dir():
+            return {}
+        if cache_file.is_symlink() or not cache_file.is_file():
+            return {}
+        info = cache_file.lstat()
+        if info.st_size > 2 * 1024 * 1024:
+            return {}
+        key = str(cache_file)
+        mem = _MEMORY_STAT_CACHE.get(key)
+        if mem is not None and mem[0] == info.st_mtime_ns:
+            return mem[1]
+        data = json.loads(cache_file.read_text(encoding="utf-8"))
+        if isinstance(data, dict):
+            _MEMORY_STAT_CACHE[key] = (info.st_mtime_ns, data)
+            return data
+        return {}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def _save_stat_cache(workspace: Path, cache: dict[str, list[Any]]) -> None:
+    cache_dir = workspace / ".forgewright" / "cache"
+    cache_file = cache_dir / "fingerprint-stat-cache.json"
+    try:
+        if cache_dir.is_symlink() or not cache_dir.is_dir():
+            return
+        if cache_file.exists() and cache_file.is_symlink():
+            return
+        if len(cache) > 16384:
+            return
+        payload = json.dumps(cache, separators=(",", ":"), sort_keys=True)
+        tmp_file = cache_dir / f".fingerprint-stat-cache.{os.getpid()}.tmp"
+        tmp_file.write_text(payload, encoding="utf-8")
+        os.replace(tmp_file, cache_file)
+        try:
+            _MEMORY_STAT_CACHE[str(cache_file)] = (
+                cache_file.lstat().st_mtime_ns,
+                cache,
+            )
+        except OSError:
+            pass
+    except OSError:
+        pass
+
+
+def _actual_record(
+    workspace: Path,
+    relative: str,
+    *,
+    stat_cache: dict[str, list[Any]] | None = None,
+    cache_dirty: list[bool] | None = None,
+    now_ns: int = 0,
+) -> str:
     path = workspace / relative
     try:
         info = path.lstat()
@@ -780,18 +841,51 @@ def _actual_record(workspace: Path, relative: str) -> str:
         payload = os.readlink(path).encode("utf-8", "surrogateescape")
         kind = "symlink"
     elif stat.S_ISREG(info.st_mode):
+        sig = [
+            mode,
+            info.st_size,
+            info.st_mtime_ns,
+            info.st_ino,
+            info.st_dev,
+        ]
+        eligible = stat_cache is not None and (
+            info.st_size > _LARGE_FILE_CACHE_THRESHOLD
+            or (now_ns > 0 and (now_ns - info.st_mtime_ns) > _STAT_CACHE_MATURITY_NS)
+        )
+        if eligible:
+            cached = stat_cache.get(relative)
+            if (
+                isinstance(cached, list)
+                and len(cached) == 6
+                and cached[:5] == sig
+                and isinstance(cached[5], str)
+                and len(cached[5]) == 64
+            ):
+                return f"worktree|{relative}|{mode:o}|file|{cached[5]}"
         digest = hashlib.sha256()
         with path.open("rb") as stream:
             while chunk := stream.read(1024 * 1024):
                 digest.update(chunk)
-        return f"worktree|{relative}|{mode:o}|file|{digest.hexdigest()}"
+        hex_digest = digest.hexdigest()
+        if eligible:
+            stat_cache[relative] = [*sig, hex_digest]
+            if cache_dirty is not None:
+                cache_dirty[0] = True
+        return f"worktree|{relative}|{mode:o}|file|{hex_digest}"
     else:
         payload = b""
         kind = "other"
     return f"worktree|{relative}|{mode:o}|{kind}|{hashlib.sha256(payload).hexdigest()}"
 
 
-def _untracked_record(workspace: Path, relative: str) -> list[str]:
+def _untracked_record(
+    workspace: Path,
+    relative: str,
+    *,
+    stat_cache: dict[str, list[Any]] | None = None,
+    cache_dirty: list[bool] | None = None,
+    now_ns: int = 0,
+) -> list[str]:
     """Represent untracked files, including embedded repositories Git reports as a dir."""
 
     normalized = relative.rstrip("/")
@@ -799,11 +893,35 @@ def _untracked_record(workspace: Path, relative: str) -> list[str]:
     try:
         root_info = root.lstat()
     except FileNotFoundError:
-        return [_actual_record(workspace, normalized)]
+        return [
+            _actual_record(
+                workspace,
+                normalized,
+                stat_cache=stat_cache,
+                cache_dirty=cache_dirty,
+                now_ns=now_ns,
+            )
+        ]
     if not stat.S_ISDIR(root_info.st_mode) or stat.S_ISLNK(root_info.st_mode):
-        return [_actual_record(workspace, normalized)]
+        return [
+            _actual_record(
+                workspace,
+                normalized,
+                stat_cache=stat_cache,
+                cache_dirty=cache_dirty,
+                now_ns=now_ns,
+            )
+        ]
 
-    records = [_actual_record(workspace, normalized)]
+    records = [
+        _actual_record(
+            workspace,
+            normalized,
+            stat_cache=stat_cache,
+            cache_dirty=cache_dirty,
+            now_ns=now_ns,
+        )
+    ]
     for directory, dirnames, filenames in os.walk(root, followlinks=False):
         current = Path(directory)
         relative_dir = current.relative_to(workspace).as_posix()
@@ -813,12 +931,28 @@ def _untracked_record(workspace: Path, relative: str) -> list[str]:
             if name != ".git" and not _ignored_verify_path(f"{relative_dir}/{name}")
         )
         for name in dirnames:
-            records.append(_actual_record(workspace, f"{relative_dir}/{name}"))
+            records.append(
+                _actual_record(
+                    workspace,
+                    f"{relative_dir}/{name}",
+                    stat_cache=stat_cache,
+                    cache_dirty=cache_dirty,
+                    now_ns=now_ns,
+                )
+            )
         for name in sorted(filenames):
             child = f"{relative_dir}/{name}"
             if name == ".git" or _ignored_verify_path(child):
                 continue
-            records.append(_actual_record(workspace, child))
+            records.append(
+                _actual_record(
+                    workspace,
+                    child,
+                    stat_cache=stat_cache,
+                    cache_dirty=cache_dirty,
+                    now_ns=now_ns,
+                )
+            )
     return records
 
 
@@ -828,6 +962,58 @@ def _git_paths(workspace: Path, args: list[str]) -> list[str]:
         for item in _run_git(workspace, args).split(b"\0")
         if item
     ]
+
+
+def _expand_ignored_directories(workspace: Path, entries: list[str]) -> list[str]:
+    expanded: list[str] = []
+    for rel in entries:
+        norm = rel.rstrip("/")
+        if _ignored_dependency_cache_path(norm) or _ignored_verify_path(norm):
+            continue
+        if not rel.endswith("/"):
+            expanded.append(rel)
+            continue
+        root_path = workspace / norm
+        try:
+            info = root_path.lstat()
+        except OSError:
+            continue
+        if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
+            expanded.append(norm)
+            continue
+        if (root_path / ".git").exists():
+            expanded.append(rel)
+            continue
+        for directory, dirnames, filenames in os.walk(root_path, followlinks=False):
+            rel_dir = Path(directory).relative_to(workspace).as_posix()
+            kept_dirs: list[str] = []
+            for dirname in dirnames:
+                child_dir = f"{rel_dir}/{dirname}"
+                if (
+                    dirname in _FINGERPRINT_IGNORED_DEPENDENCY_DIR_NAMES
+                    or _ignored_verify_path(child_dir)
+                ):
+                    continue
+                dir_path = Path(directory) / dirname
+                try:
+                    dir_info = dir_path.lstat()
+                except OSError:
+                    continue
+                if stat.S_ISLNK(dir_info.st_mode):
+                    expanded.append(child_dir)
+                    continue
+                if (dir_path / ".git").exists():
+                    expanded.append(child_dir + "/")
+                    continue
+                kept_dirs.append(dirname)
+            dirnames[:] = kept_dirs
+            for filename in filenames:
+                child_file = f"{rel_dir}/{filename}"
+                if not _ignored_dependency_cache_path(
+                    child_file
+                ) and not _ignored_verify_path(child_file):
+                    expanded.append(child_file)
+    return expanded
 
 
 def worktree_fingerprint(
@@ -878,9 +1064,23 @@ def worktree_fingerprint(
         )
 
     try:
-        inside = _run_git(workspace, ["rev-parse", "--is-inside-work-tree"]).strip()
+        rev_out = (
+            _run_git(
+                workspace,
+                ["rev-parse", "--is-inside-work-tree", "HEAD"],
+                check=True,
+            )
+            .decode("utf-8", "replace")
+            .splitlines()
+        )
+        inside = rev_out[0].strip().encode("ascii", "replace") if rev_out else b""
+        head_precomputed = rev_out[1].strip() if len(rev_out) > 1 else ""
     except (OSError, subprocess.SubprocessError, RuntimeError):
-        inside = b""
+        head_precomputed = ""
+        try:
+            inside = _run_git(workspace, ["rev-parse", "--is-inside-work-tree"]).strip()
+        except (OSError, subprocess.SubprocessError, RuntimeError):
+            inside = b""
     if inside != b"true":
         digest = hashlib.sha256()
         for root, dirs, files in os.walk(workspace):
@@ -898,39 +1098,55 @@ def worktree_fingerprint(
         return f"NONGIT:{digest.hexdigest()}"
 
     try:
-        head = _run_git(workspace, ["rev-parse", "HEAD"], check=True).decode().strip()
+        head = (
+            head_precomputed
+            or _run_git(workspace, ["rev-parse", "HEAD"], check=True).decode().strip()
+        )
+        now_ns = time.time_ns()
+        stat_cache = _load_stat_cache(workspace)
+        cache_dirty = [False]
         index_records = []
         index_metadata: dict[str, str] = {}
         submodule_paths: list[str] = []
+        tracked: list[str] = []
         for record in _run_git(workspace, ["ls-files", "-s", "-z"]).split(b"\0"):
             if not record:
                 continue
             metadata, raw_path = record.split(b"\t", 1)
             relative = raw_path.decode("utf-8", "surrogateescape")
+            tracked.append(relative)
             if not path_ignored(relative):
                 metadata_text = metadata.decode("ascii", "replace")
                 index_records.append("index|" + relative + "|" + metadata_text)
                 index_metadata[relative] = metadata_text
                 if metadata_text.startswith("160000 "):
                     submodule_paths.append(relative)
-        tracked = _git_paths(workspace, ["ls-files", "-z"])
         untracked = _git_paths(
             workspace, ["ls-files", "--others", "--exclude-standard", "-z"]
         )
-        ignored = _git_paths(
+        ignored_raw = _git_paths(
             workspace,
-            ["ls-files", "--others", "--ignored", "--exclude-standard", "-z"],
+            [
+                "ls-files",
+                "--others",
+                "--ignored",
+                "--exclude-standard",
+                "--directory",
+                "-z",
+            ],
         )
-        ignored = [
-            relative
-            for relative in ignored
-            if not _ignored_dependency_cache_path(relative)
-        ]
+        ignored = _expand_ignored_directories(workspace, ignored_raw)
         records = [f"HEAD|{head}", *sorted(index_records)]
         for relative in sorted(set(tracked)):
             if path_ignored(relative):
                 continue
-            record = _actual_record(workspace, relative)
+            record = _actual_record(
+                workspace,
+                relative,
+                stat_cache=stat_cache,
+                cache_dirty=cache_dirty,
+                now_ns=now_ns,
+            )
             records.append(record)
             if records_out is not None:
                 records_out[relative] = (
@@ -939,12 +1155,20 @@ def worktree_fingerprint(
         for relative in sorted(set((*untracked, *ignored))):
             if path_ignored(relative):
                 continue
-            for record in _untracked_record(workspace, relative):
+            for record in _untracked_record(
+                workspace,
+                relative,
+                stat_cache=stat_cache,
+                cache_dirty=cache_dirty,
+                now_ns=now_ns,
+            ):
                 records.append(record)
                 if records_out is not None:
                     parts = record.split("|", 2)
                     diagnostic_path = parts[1] if len(parts) > 1 else relative
                     records_out[diagnostic_path] = record
+        if cache_dirty[0]:
+            _save_stat_cache(workspace, stat_cache)
         for relative in sorted(set(submodule_paths)):
             submodule = workspace / relative
             nested = (
@@ -987,13 +1211,18 @@ def changed_files(workspace: Path) -> list[str]:
 def hard_signal(workspace: Path, files: Iterable[str]) -> bool:
     file_list = list(files)
     pieces: list[str] = [*file_list]
+    has_git_diff = False
     try:
         for args in (("diff", "--no-ext-diff"), ("diff", "--cached", "--no-ext-diff")):
             pieces.append(_run_git(workspace, list(args)).decode("utf-8", "replace"))
+        has_git_diff = (workspace / ".git").exists()
     except (OSError, subprocess.SubprocessError, RuntimeError):
         pass
     for relative in file_list:
         if _ignored_verify_path(relative):
+            continue
+        normalized = relative.replace("\\", "/").removeprefix("./")
+        if has_git_diff and normalized in _GENERATED_KERNEL_DOCS:
             continue
         path = workspace / relative
         try:

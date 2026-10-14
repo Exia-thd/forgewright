@@ -5,6 +5,23 @@ set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MAX_PAYLOAD_BYTES=1048576
+PYTHON_COMMAND=()
+for _cand in "${FORGEWRIGHT_PYTHON_BIN:-}" python3 python python3.13 python3.12 python3.11; do
+  [[ -n "$_cand" ]] || continue
+  _exe="$(command -v "$_cand" 2>/dev/null || true)"
+  if [[ -n "$_exe" ]]; then
+    PYTHON_COMMAND=("$_exe")
+    break
+  fi
+done
+if [[ ${#PYTHON_COMMAND[@]} -eq 0 ]]; then
+  _py="$(command -v py.exe 2>/dev/null || command -v py 2>/dev/null || true)"
+  [[ -n "$_py" ]] && PYTHON_COMMAND=("$_py" "-3")
+fi
+if [[ ${#PYTHON_COMMAND[@]} -eq 0 ]]; then
+  printf '%s\n' '{"decision":"deny","reason":"Forgewright could not validate this tool call."}'
+  exit 0
+fi
 if ! TEMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/forgewright-antigravity-hook.XXXXXX")"; then
   printf '%s\n' '{"decision":"deny","reason":"Forgewright could not validate this tool call."}'
   exit 0
@@ -22,7 +39,7 @@ trap cleanup EXIT
 trap 'emit_deny; exit 0' HUP INT TERM
 
 emit_decision() {
-  python3 -c 'import json,sys; print(json.dumps({"decision":sys.argv[1],"reason":sys.argv[2]}, separators=(",", ":")))' "$1" "$2"
+  "${PYTHON_COMMAND[@]}" -c 'import json,sys; print(json.dumps({"decision":sys.argv[1],"reason":sys.argv[2]}, separators=(",", ":")))' "$1" "$2"
 }
 emit_deny() {
   emit_decision deny "Forgewright could not validate this tool call."
@@ -35,7 +52,7 @@ touch "$PAYLOAD_FILE" "$TOOL_FILE" "$ARGS_FILE" "$WORKSPACE_FILE" || {
 chmod 700 "$TEMP_ROOT" 2>/dev/null || true
 chmod 600 "$PAYLOAD_FILE" "$TOOL_FILE" "$ARGS_FILE" "$WORKSPACE_FILE" 2>/dev/null || true
 
-python3 -c 'import sys; path=sys.argv[1]; limit=int(sys.argv[2]); data=sys.stdin.buffer.read(limit + 1); open(path, "wb").write(data)' \
+ "${PYTHON_COMMAND[@]}" -c 'import sys; path=sys.argv[1]; limit=int(sys.argv[2]); data=sys.stdin.buffer.read(limit + 1); open(path, "wb").write(data)' \
   "$PAYLOAD_FILE" "$MAX_PAYLOAD_BYTES" || {
     emit_deny
     exit 0
@@ -46,7 +63,7 @@ if [[ "$PAYLOAD_SIZE" -gt "$MAX_PAYLOAD_BYTES" ]]; then
   exit 0
 fi
 
-if ! python3 - "$PAYLOAD_FILE" "$TOOL_FILE" "$ARGS_FILE" "$WORKSPACE_FILE" <<'PYEOF'
+if ! "${PYTHON_COMMAND[@]}" - "$PAYLOAD_FILE" "$TOOL_FILE" "$ARGS_FILE" "$WORKSPACE_FILE" <<'PYEOF'
 import json
 import os
 import sys

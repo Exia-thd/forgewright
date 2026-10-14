@@ -35,3 +35,10 @@ token_tracking:
   enabled: true
   log_dir: "~/.forgewright/usage"
   export_format: jsonl
+delegationMode:
+  enabled: on
+  worker:
+    cli: pi
+    provider: openai-codex
+    model: gpt-6.1-sol
+    authSource: codex

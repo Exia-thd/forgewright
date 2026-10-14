@@ -58,6 +58,30 @@ cd "$PROJECT_ROOT"
 POLICY_FILE="${FORGEWRIGHT_POLICY_FILE:-.forgewright/execution-policy.yaml}"
 TELEMETRY_SH="${SCRIPT_DIR}/telemetry.sh"
 
+PYTHON_COMMAND=()
+_resolve_python() {
+  [[ ${#PYTHON_COMMAND[@]} -gt 0 ]] && return 0
+  if [[ -n "${FORGEWRIGHT_PYTHON_BIN:-}" && -x "${FORGEWRIGHT_PYTHON_BIN}" ]]; then
+    PYTHON_COMMAND=("${FORGEWRIGHT_PYTHON_BIN}")
+    return 0
+  fi
+  local candidate exe
+  for candidate in python3 python python3.13 python3.12 python3.11; do
+    exe="$(command -v "$candidate" 2>/dev/null || true)"
+    if [[ -n "$exe" ]]; then
+      PYTHON_COMMAND=("$exe")
+      return 0
+    fi
+  done
+  exe="$(command -v py.exe 2>/dev/null || command -v py 2>/dev/null || true)"
+  if [[ -n "$exe" ]]; then
+    PYTHON_COMMAND=("$exe" "-3")
+    return 0
+  fi
+  log_error "python3/python is required but not found in PATH."
+  exit 3
+}
+
 usage() {
   cat >&2 <<'EOF'
 Usage:
@@ -74,18 +98,31 @@ _emit() {
   bash "$TELEMETRY_SH" emit "$1" "$2" >/dev/null 2>&1 || true
 }
 
+POLICY_MODE=""
+POLICY_REQUIRE_VERIFY=""
+POLICY_MAX_ESCALATIONS=""
+POLICY_REFRESH_TICKS=""
+POLICY_PATTERNS=()
+
 # Extract a scalar value: `key: value   # comment` → `value`.
 # Values must not contain spaces (documented in the policy file header).
 _scalar() {
-  (grep -E "^${1}:" "$POLICY_FILE" 2>/dev/null || true) \
-    | head -1 | cut -d':' -f2- | cut -d'#' -f1 | tr -d ' \t"\r'
+  case "$1" in
+    mode)                    printf '%s\n' "$POLICY_MODE" ;;
+    require_verify)          printf '%s\n' "$POLICY_REQUIRE_VERIFY" ;;
+    max_escalations)         printf '%s\n' "$POLICY_MAX_ESCALATIONS" ;;
+    refresh_interval_ticks)  printf '%s\n' "$POLICY_REFRESH_TICKS" ;;
+    *)                       printf '\n' ;;
+  esac
 }
 
 # Extract deny_patterns list items: `  - "pattern"` → `pattern`.
 # deny_patterns is the only list in this file, so any `- ` line belongs to it.
 _deny_patterns() {
-  (grep -E '^[[:space:]]*- ' "$POLICY_FILE" 2>/dev/null || true) \
-    | tr -d '"\r' | sed 's/^[[:space:]]*- //'
+  local p
+  for p in "${POLICY_PATTERNS[@]}"; do
+    printf '%s\n' "$p"
+  done
 }
 
 _policy_error() {
@@ -96,7 +133,17 @@ _policy_error() {
 _validate_policy() {
   [[ -f "$POLICY_FILE" && -r "$POLICY_FILE" && -s "$POLICY_FILE" ]] || return 1
 
+  POLICY_MODE=""
+  POLICY_REQUIRE_VERIFY=""
+  POLICY_MAX_ESCALATIONS=""
+  POLICY_REFRESH_TICKS=""
+  POLICY_PATTERNS=()
+
   local line pattern_count=0
+  local c_mode=0 c_rv=0 c_me=0 c_rt=0 c_dp=0
+  local scalar_re='^(mode|require_verify|max_escalations|refresh_interval_ticks):[[:space:]]*([^[:space:]#"]+)([[:space:]]*#.*)?$'
+  local item_re='^[[:space:]]*-[[:space:]]"([^"]+)"[[:space:]]*$'
+
   while IFS= read -r line || [[ -n "$line" ]]; do
     line="${line%$'\r'}"
     if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
@@ -104,56 +151,68 @@ _validate_policy() {
     fi
     case "$line" in
       mode:*|require_verify:*|max_escalations:*|refresh_interval_ticks:*)
-        [[ "$line" =~ ^(mode|require_verify|max_escalations|refresh_interval_ticks):[[:space:]]*[^[:space:]#]+([[:space:]]*#.*)?$ ]] || return 1
+        [[ "$line" =~ $scalar_re ]] || return 1
+        case "${BASH_REMATCH[1]}" in
+          mode)
+            c_mode=$((c_mode + 1))
+            POLICY_MODE="${BASH_REMATCH[2]}"
+            ;;
+          require_verify)
+            c_rv=$((c_rv + 1))
+            POLICY_REQUIRE_VERIFY="${BASH_REMATCH[2]}"
+            ;;
+          max_escalations)
+            c_me=$((c_me + 1))
+            POLICY_MAX_ESCALATIONS="${BASH_REMATCH[2]}"
+            ;;
+          refresh_interval_ticks)
+            c_rt=$((c_rt + 1))
+            POLICY_REFRESH_TICKS="${BASH_REMATCH[2]}"
+            ;;
+        esac
         ;;
-      deny_patterns:) ;;
+      deny_patterns:*)
+        [[ "$line" =~ ^deny_patterns:[[:space:]]*$ ]] || return 1
+        c_dp=$((c_dp + 1))
+        ;;
       [[:space:]]*'- '*)
-        [[ "$line" =~ ^[[:space:]]*-[[:space:]]\"[^\"]+\"[[:space:]]*$ ]] || return 1
+        [[ "$line" =~ $item_re ]] || return 1
+        POLICY_PATTERNS+=("${BASH_REMATCH[1]}")
         pattern_count=$((pattern_count + 1))
         ;;
       *) return 1 ;;
     esac
   done < "$POLICY_FILE"
 
-  [[ "$(grep -Ec '^mode:' "$POLICY_FILE")" -eq 1 ]] || return 1
-  [[ "$(grep -Ec '^require_verify:' "$POLICY_FILE")" -eq 1 ]] || return 1
-  [[ "$(grep -Ec '^max_escalations:' "$POLICY_FILE")" -eq 1 ]] || return 1
-  [[ "$(grep -Ec '^refresh_interval_ticks:' "$POLICY_FILE")" -eq 1 ]] || return 1
-  [[ "$(grep -Ec '^deny_patterns:[[:space:]]*$' "$POLICY_FILE")" -eq 1 ]] || return 1
+  [[ "$c_mode" -eq 1 && "$c_rv" -eq 1 && "$c_me" -eq 1 && "$c_rt" -eq 1 && "$c_dp" -eq 1 ]] || return 1
 
   local regex_rc pattern
-  while IFS= read -r pattern; do
-    if printf '' | grep -Eq -- "$pattern" 2>/dev/null; then
-      :
-    else
-      regex_rc=$?
-      [[ "$regex_rc" -eq 1 ]] || return 1
-    fi
-  done < <(_deny_patterns)
+  for pattern in "${POLICY_PATTERNS[@]}"; do
+    regex_rc=0
+    # shellcheck disable=SC2319
+    [[ "" =~ $pattern ]] 2>/dev/null || regex_rc=$?
+    [[ "$regex_rc" -le 1 ]] || return 1
+  done
 
-  local mode require_verify max_escalations refresh_ticks
-  mode="$(_scalar mode)"
-  require_verify="$(_scalar require_verify)"
-  max_escalations="$(_scalar max_escalations)"
-  refresh_ticks="$(_scalar refresh_interval_ticks)"
-  [[ "$mode" =~ ^(strict|permissive|audit)$ ]] || return 1
-  [[ "$require_verify" =~ ^(true|false)$ ]] || return 1
-  [[ "$max_escalations" =~ ^[1-9][0-9]*$ ]] || return 1
-  [[ "$refresh_ticks" =~ ^[1-9][0-9]*$ ]] || return 1
+  [[ "$POLICY_MODE" =~ ^(strict|permissive|audit)$ ]] || return 1
+  [[ "$POLICY_REQUIRE_VERIFY" =~ ^(true|false)$ ]] || return 1
+  [[ "$POLICY_MAX_ESCALATIONS" =~ ^[1-9][0-9]*$ ]] || return 1
+  [[ "$POLICY_REFRESH_TICKS" =~ ^[1-9][0-9]*$ ]] || return 1
   [[ "$pattern_count" -gt 0 ]] || return 1
 }
 
 # Detect destructive commands structurally so wrappers, executable paths, git
 # global options, and split short flags cannot bypass the configurable regexes.
 _builtin_deny() {
-  python3 - "$1" <<'PYEOF'
+  _resolve_python
+  "${PYTHON_COMMAND[@]}" - "$1" <<'PYEOF'
 import os
 import shlex
 import sys
 
 subject = sys.argv[1]
 try:
-    lexer = shlex.shlex(subject, posix=True, punctuation_chars=";&|")
+    lexer = shlex.shlex(subject.replace("\\", "/"), posix=True, punctuation_chars=";&|")
     lexer.whitespace_split = True
     tokens = list(lexer)
 except ValueError:
@@ -163,7 +222,11 @@ except ValueError:
 stops = {";", "&&", "||", "|", "&"}
 
 def base(token: str) -> str:
-    return os.path.basename(token)
+    name = token.replace("\\", "/").rsplit("/", 1)[-1].lower()
+    for ext in (".exe", ".cmd", ".bat"):
+        if name.endswith(ext):
+            return name[: -len(ext)]
+    return name
 
 for i, token in enumerate(tokens):
     command = base(token)
@@ -277,19 +340,24 @@ cmd_check() {
   _validate_policy || { _policy_error; exit 1; }
 
   local mode
-  mode="$(_scalar mode)"
-  mode="${mode:-strict}"
+  mode="${POLICY_MODE:-strict}"
 
   local matched=""
-  matched="$(_builtin_deny "$subject")"
-  while IFS= read -r pattern; do
+  local builtin_re='(^|[^a-zA-Z0-9_])(rm|git|chmod)([^a-zA-Z0-9_]|$)'
+  if [[ "$subject" == *"'"* || "$subject" == *'"'* || "$subject" == *"\\"* || "$subject" =~ $builtin_re ]]; then
+    matched="$(_builtin_deny "$subject")"
+  fi
+  local pattern
+  shopt -s nocasematch
+  for pattern in "${POLICY_PATTERNS[@]}"; do
     [[ -n "$matched" ]] && break
     [[ -z "$pattern" ]] && continue
-    if printf '%s' "$subject" | grep -Eiq -- "$pattern"; then
+    if [[ "$subject" =~ $pattern ]]; then
       matched="$pattern"
       break
     fi
-  done < <(_deny_patterns)
+  done
+  shopt -u nocasematch
 
   if [[ -z "$matched" ]]; then
     log_info "ALLOW ${tool}"
@@ -297,8 +365,13 @@ cmd_check() {
   fi
 
   local payload
-  payload="$(jq -cn --arg tool "$tool" --arg pattern "$matched" --arg mode "$mode" \
-                    '{tool: $tool, pattern: $pattern, mode: $mode}')"
+  if command -v jq >/dev/null 2>&1; then
+    payload="$(jq -cn --arg tool "$tool" --arg pattern "$matched" --arg mode "$mode" \
+                      '{tool: $tool, pattern: $pattern, mode: $mode}')"
+  else
+    _resolve_python
+    payload="$("${PYTHON_COMMAND[@]}" -c 'import json,sys; print(json.dumps({"tool":sys.argv[1],"pattern":sys.argv[2],"mode":sys.argv[3]},separators=(",",":")))' "$tool" "$matched" "$mode")"
+  fi
 
   case "$mode" in
     permissive)
@@ -319,9 +392,6 @@ cmd_check() {
       ;;
   esac
 }
-
-command -v jq >/dev/null 2>&1 || { log_error "jq is required but not found in PATH."; exit 3; }
-command -v python3 >/dev/null 2>&1 || { log_error "python3 is required but not found in PATH."; exit 3; }
 
 [[ $# -ge 1 ]] || usage
 cmd="$1"; shift

@@ -1288,6 +1288,24 @@
   ],
   "backlog": [
     {
+      "id": "windows-and-perf-upgrade",
+      "title": "Optimize worktree fingerprinting, policy checks, and Windows cross-platform runtime hooks",
+      "type": "feature",
+      "status": "done",
+      "priority": "high",
+      "owner": "Runtime maintainers",
+      "acceptance": [
+        "policy-check.sh, telemetry.sh, rule-ledger.sh, and pre-tool hooks resolve Python across POSIX and Windows and fall back cleanly when jq is absent.",
+        "Built-in structural command deny checks normalize Windows executable paths and extensions (.exe, .cmd, .bat) without spawning unnecessary subshells.",
+        "worktree_fingerprint prunes ignored directory trees via git ls-files --directory, caches stat signatures safely, and excludes __pycache__ bytecode drift."
+      ],
+      "references": [
+        {
+          "path": "docs/pipeline-reference.md"
+        }
+      ]
+    },
+    {
       "id": "game-designer-source-authority",
       "title": "Reconcile full Game Designer templates with studio and visual authority",
       "type": "bug",

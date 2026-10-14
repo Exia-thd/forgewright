@@ -13,39 +13,53 @@
   <img src="https://img.shields.io/badge/version-8.7.1-blue?style=flat-square" alt="Version 8.7.1" />
   <img src="https://img.shields.io/badge/skills-84-brightgreen?style=flat-square" alt="84 skills" />
   <img src="https://img.shields.io/badge/verification-local--first-24292f?style=flat-square" alt="Local-first verification" />
+  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-0078d4?style=flat-square" alt="macOS | Linux | Windows" />
   <img src="https://img.shields.io/badge/integration-MCP-7057ff?style=flat-square" alt="MCP integration" />
 </p>
 
 <p align="center">
+  <a href="#what-forgewright-is">What it is</a> ·
+  <a href="#how-it-helps-and-measured-impact">Why it helps</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#recent-upgrades">Recent upgrades</a> ·
   <a href="#quick-start">Quick start</a> ·
-  <a href="#what-you-can-build">Use cases</a> ·
-  <a href="#whats-new">What's new</a> ·
   <a href="#verification">Verification</a> ·
   <a href="README.vi.md">Tiếng Việt</a>
 </p>
 
-**Forgewright is a local-first engineering harness for AI-assisted software delivery.** It brings task definition, specialist workflows, code intelligence, tool controls, verification, and project continuity into one repository. Use it with the model runtime and tools you configure—not a mandatory hosted service or a second model subscription.
+## What Forgewright is
 
-## Why Forgewright
+**Forgewright is a local-first, provider-neutral engineering harness and orchestrator for AI coding agents** (Codex, Claude Code, Cursor, Antigravity, Gemini CLI/IDE, and Forge CLI).
 
-| Engineering problem | What Forgewright adds |
-| --- | --- |
-| The agent writes code before understanding the task | A goal, explicit acceptance criteria, risk assessment, and the minimum safe scope. |
-| Every specialist reads the entire conversation | Compact routing, on-demand skill overlays, bounded task context, and artifact references. |
-| Parallel workers overwrite one another | Dependency-aware dispatch, explicit ownership, and isolated worktrees where configured. |
-| “Done” means the model says it is done | Project-owned checks and schema-v2 evidence tied to the command, acceptance criteria, and exact worktree. |
-| A stopped task leaves effects or processes behind | Owned process leases, cancellation, lifecycle accounting, and honest cleanup status. |
-| The next session forgets decisions | Project-scoped checkpoints and canonical documentation; retrieved memory remains context, not authority. |
+Instead of relying on ad-hoc prompts or letting an agent edit files blindly and declare success without proof, Forgewright wraps your existing model runtime in a structured software delivery system:
+- **84 canonical specialist skills** across **24 operating modes** (backend, frontend, fullstack, architecture, QA, security, DevOps, data/AI, mobile, Unity/Unreal/Godot/Phaser/Three.js game production, UX/UI, and product management).
+- **Pre-tool execution guardrails** that block destructive commands and enforce project-owned safety policies across macOS, Linux, and Windows before a tool call runs.
+- **Schema-v2 completion verification** that binds every completion claim to an exact command, exit code, output digest, acceptance criterion, and full worktree fingerprint (`TREE:<sha256>`).
+- **Code intelligence & continuity** via GitNexus blast-radius analysis, bounded worker context packets, and a static local **Docs Hub** generated from canonical project state.
 
-**84 skills. 24 operating modes. One delivery pipeline.** The [product manifest](product-manifest.json) and [capability inventory](docs/capability-maturity.json) keep those claims tied to the repository rather than marketing copy.
+The [product manifest](product-manifest.json) and [capability inventory](docs/capability-maturity.json) keep every public count and maturity label tied to repository truth.
+
+## How it helps and measured impact
+
+| Common AI coding failure | How Forgewright solves it | Practical benefit |
+| --- | --- | --- |
+| Agent codes before understanding scope or risk | Proportional preflight (`QUICK` / `STANDARD` / `DEEP` / `HARD`) locks acceptance and minimum safe scope first | Fewer wasted edits, clear rollback paths, and mandatory deep review on payment/auth/schema changes |
+| Every turn or subagent reloads huge instructions | Compact Kernel LITE boot table + on-demand `LITE.md` overlays + 64 KiB bounded worker packets | Keeps context focused on the active task instead of burning tokens on unrelated instructions |
+| “It works” claimed from prose without running checks | Stop-gate validator (`stop_gate.py` + `verify_gate.py`) replays final commands and checks `TREE:<sha256>` | Blocks unverified completion claims; fixes require observed `RED → GREEN` (and mutation checks on `HARD` work) |
+| Destructive shell commands or runaway browser tabs | Pre-tool `policy-check.sh` gate + Guardrail Rule 15 browser/emulator slot leases | Prevents accidental `git reset --hard` / `rm -rf` across POSIX and Windows and stops tab/process leaks |
+| Parallel workers overwrite each other's files | Explicit file ownership contracts, git worktree isolation, and digest-bound `PLAN_LOCKED` handoffs | Safe parallel dispatch when scopes are independent; automatic serial fallback when coupled |
+| Documentation and roadmap drift from real code | `forge docs gate` + `verify-product-truth.py` + `verify-roadmap-completion.py` in local CI | Enforces documentation continuity on material changes before commits land |
+
+**Measured local runtime improvements (v8.7.1 checkout):**
+- **Pre-tool policy gate (`scripts/lite/policy-check.sh`):** Reduced from ~145 ms to **~10 ms** on read calls (**~14× faster**) and **~29 ms** on git commands by replacing 30+ `grep`/`cut`/`tr` subshells with single-pass native Bash regex parsing.
+- **Worktree fingerprinting (`scripts/lite/evidence_common.py`):** Reduced from ~663 ms to **~91 ms warm / ~176 ms cold** (**~3.8–7.2× faster**) via `git ls-files --directory` tree pruning, combined `git rev-parse`, bounded stat caching, and `__pycache__` exclusion.
+- **Cross-platform Windows readiness:** Native support for Windows Python launchers (`python.exe`, `py.exe -3`, `Scripts/python.exe`), `cygpath` workspace normalization, Windows executable path matching (`.exe`, `.cmd`, `.bat`), and automatic Python JSON fallback when `jq` is absent.
 
 ## What you can build
 
-**Web products and internal tools.** Shape a brief, define architecture and acceptance, coordinate implementation and review, and retain the decisions needed for maintenance. The [Product Factory source](mcp/src/product-factory/) includes intent, environment-adapter, outcome-verification, and release contracts.
-
-**Games and mobile projects.** Coordinate systems design, engineering, art direction, QA, performance work, and release evidence. The [Game Studio workflow](workflows/game-studio-build.md) covers concept through release; Unity, Android, and web environment adapters have local tests. Each target still needs its own build tools, devices, and production evidence.
-
-**Existing codebases.** Investigate bugs, assess refactor impact, generate tests, review security-sensitive changes, and keep documentation aligned with the code. Start with a bounded task; parallel execution is an option, not a requirement.
+- **Web products, APIs, and SaaS platforms:** Turn a product brief into architecture, database schemas, API contracts, frontend components, and E2E verification using the [Product Factory source](mcp/src/product-factory/) and fullstack specialist skills.
+- **Games and mobile applications:** Coordinate game design, engine code, shaders, audio, QA, and device playtesting through the [Game Studio workflow](workflows/game-studio-build.md) and [Signal Dash Three.js reference fixture](tests/game/fixtures/threejs-lifecycle/README.md).
+- **Brownfield production repositories:** Trace bugs, run upstream impact analysis with [GitNexus](docs/guides/gitnexus.md) before touching shared symbols, audit test value with the [QA protocol](skills/_shared/protocols/qa-test-protocol.md), and maintain architectural records in the [Docs Hub](docs/guides/docs-hub.md).
 
 ### A practical request
 
@@ -59,8 +73,6 @@ Implement the smallest safe change, run the checks, and report:
   changed files · observed results · remaining risks · rollback
 Do not publish or deploy without approval.
 ```
-
-This is an example input, not a fabricated execution transcript. Actual results depend on the connected runtime, project, tools, and checks.
 
 ## How it works
 
@@ -79,44 +91,65 @@ flowchart LR
     G --> I[Checkpoint and maintain]
 ```
 
-Clear local work stays small. Security, billing, concurrency, public contracts, and release changes require stronger checks. A worker's successful generation is not product acceptance, and stopping a retry loop never turns an unverified result into a verified one.
+1. **Right-size the effort:** Clear local edits take the `QUICK` path (1–3 actions, focused check, zero ceremony). Feature or debug work takes `STANDARD`. Touching payment, billing, IAP, auth, public contracts, concurrency, or release triggers `DEEP` and `HARD` escalation ([ESCALATE.md](kernel/ESCALATE.md)).
+2. **Route only the needed specialist:** The boot table selects one compact `LITE.md` skill overlay on demand instead of loading all **84 skills**.
+3. **Gate every tool call and completion claim:** Pre-tool hooks validate commands against `.forgewright/execution-policy.yaml` ([POLICY.md](kernel/POLICY.md)). On completion, `stop_gate.py` verifies the exact-turn schema-v2 record in `.forgewright/verify/` ([VERIFY.md](kernel/VERIFY.md)).
 
-The [pipeline reference](docs/pipeline-reference.md) describes orchestration; the [canonical runtime ADR](docs/adr/0001-canonical-production-runtime.md) documents the implemented enforcement boundaries.
+See the [pipeline reference](docs/pipeline-reference.md) and [canonical runtime ADR](docs/adr/0001-canonical-production-runtime.md) for enforcement boundaries.
 
-## Tests that earn their cost
+## Recent upgrades
 
-The [QA protocol](skills/_shared/protocols/qa-test-protocol.md) requires a changed behavior, plausible fault, existing-coverage check and independent oracle before adding tests. Reuse sufficient coverage; new skips or weaker assertions require owner authorization. Audit cleanup preserves unique negative paths and distinguishes shipped-document contracts from runtime proof.
+### 1. Windows & cross-platform hot-path optimization
 
-Local precommit reports its staged paths and conservative test lanes. MCP/CLI changes retain Python cross-component contracts; documentation retains both consumer suites. Shared runtime, runner, dependency and unmapped changes use the full precommit fallback. A passing scoped lane is not a full-suite result. Scoped precommit lanes deselect one named whole-roadmap replay, which remains in default pytest. Before stable release, `node scripts/ci/local-ci.mjs full` runs every roadmap verifier directly and avoids duplicating that replay in its Python step. Type checks, emit, Docs Hub, formatting and review gates remain mandatory. Selection and timings are recorded in `.forgewright/reports/local-ci/`.
+- **Fast, zero-subshell policy validation:** [policy-check.sh](scripts/lite/policy-check.sh), [telemetry.sh](scripts/lite/telemetry.sh), and [rule-ledger.sh](scripts/lite/rule-ledger.sh) now parse policy files in pure Bash, resolve `python3`/`python`/`py.exe -3` across POSIX and Windows, normalize `FORGEWRIGHT_WORKSPACE` via `cygpath`, and fall back to Python when `jq` is not installed.
+- **Windows destructive-command protection:** Structural command parsing normalizes Windows backslashes and `.exe`/`.cmd`/`.bat` suffixes so commands like `C:\\Program Files\\Git\\cmd\\git.exe reset --hard` or `git.cmd push --force` are blocked identically to POSIX paths.
+- **Accelerated worktree fingerprinting:** [evidence_common.py](scripts/lite/evidence_common.py) prunes ignored directories via `git ls-files --directory`, caches large/mature file hashes in `.forgewright/cache/`, excludes `__pycache__` bytecode noise, and avoids false-positive `HARD` triggers on generated root instruction files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`).
 
-## Evidence loop: observation, context and learning
+### 2. Codex & Claude plugin distribution + Behavioral Skill Quality Engine
 
-The ECC-inspired upgrade adds project-isolated, opt-in observation, bounded supplemental worker context, native candidate intake, and source-bound handoff. It does not install a second agent stack, start a paid learning model or automatically promote frequent tool sequences.
+Forgewright ships one unified plugin source for **Codex** and **Claude Code** ([plugin manifest](plugin.json)), exposing the entry workflow and **84 skills** with trigger-only descriptions and a consent-gated `PreToolUse` bootstrap hook ([auto-bootstrap.mjs](hooks/auto-bootstrap.mjs)). The [Skill Quality Engine](evals/skills/README.md) evaluates **baseline → current → candidate** behavior, minimal `PLAN_LOCKED` worker packets, and failure classification (`hypothesis_wrong`, `implementation_wrong`, `environment_wrong`, `architecture_wrong`).
+
+### 3. Evidence loop: observation, context, and learning (ECC)
+
+Project-isolated, opt-in observation ([Instinct System](skills/instinct-system/SKILL.md)), bounded 3-round/64 KiB worker context packets, native MCP candidate intake (`fw_record_learning_candidate`), and resumable handoffs ([architecture](docs/architecture.md#evidence-gated-learning-and-worker-context-protocols)):
 
 ```sh
-# Verify shipped observer code and source consistency.
 npm run check:observer
-
-# Run actual local game/web/app reference workloads and negative controls.
 npm run bench:ecc
-
-# Verify the ECC integration, native intake, regression and paired-comparison gates.
 npm run verify:ecc
-
-# Maintained research and handoff entrypoints.
 python3 scripts/runtime/research_decision.py --help
 python3 scripts/runtime/resumable_handoff.py --help
 ```
 
-The native MCP `fw_record_learning_candidate` tool requires a parent-owned task descriptor, matching project/task/plan/tree, schema-v2 evidence and a terminal ledger. It writes an **unapproved proposal** without changing the active registry. Its stdio tests retain containment, policy, quality and output-sandbox controls. Independent review, replay, non-regression and rollback gates still apply.
+### 4. Conservative test lanes, browser tab guardrails, and game studio authority
 
-Worker context has a parent-owned three-round/64 KiB budget. Missing required context blocks execution, and stale context cannot authorize changed source. Local scenario reports are **test-only**, with no inferred model savings or product outcomes. See [architecture and activation boundaries](docs/architecture.md#evidence-gated-learning-and-worker-context-protocols) and the [Instinct System contract](skills/instinct-system/SKILL.md).
+- **Conservative local CI lanes ([local-ci.py](scripts/ci/local-ci.py)):** Precommit selects targeted lanes for MCP, CLI, or docs while keeping full fallback for shared runtime/script edits and enforcing the [QA test protocol](skills/_shared/protocols/qa-test-protocol.md).
+- **Browser & emulator resource guardrails:** [Guardrail Rule 15](skills/_shared/protocols/guardrail.md#15-browser-tab-lifecycle--deny-fail-closed) caps interactive browser usage to 1 reused tab (max 2 task-wide) with mandatory teardown, while [Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources) governs Three.js, Android, and iOS playtest admission slots.
+- **Phase-scoped Game Studio & Game Designer:** [Game Designer](skills/game-designer/SKILL.md) and [game skill evolution](workflows/game-skill-evolution.md) honor studio phase gates and approved art direction without forcing universal visual recipes.
+- **Bounded MCP cache & System-1 routing:** MCP result caching enforces 512 KiB/entry, 2 MiB/project, and 8 MiB/process limits; local EN/VI routing ([tool-efficiency.md](skills/_shared/protocols/tool-efficiency.md)) operates without external API keys.
+
+### 5. Optional Pi worker pilot (default-off, experimental)
+
+The [Pi integration](integrations/pi/) provides an opt-in, host-governed worker option (`@earendil-works/pi-agent-core@0.85.1`) with account-level budgets, compare-and-swap patches, cancellation, and a shared SQLite host admission governor (192 MiB per Pi worker, 128 MiB per single-process verifier). See the [Pi ADR](docs/adr/ADR-pi-worker-runtime.md).
+
+```bash
+npm --prefix integrations/pi ci --ignore-scripts --no-audit --no-fund
+npm run build && npm run build:cli
+npm --prefix integrations/pi run test:all
+```
+
+From a parent project with the submodule:
+
+```bash
+node forgewright/src/cli/dist/index.js delegate on --worker pi --provider openai-codex --auth-source codex --model <exact-codex-model-id>
+node forgewright/src/cli/dist/index.js delegate status --worker pi
+node forgewright/src/cli/dist/index.js delegate run --worker pi --contract task.json
+node forgewright/src/cli/dist/index.js delegate resources
+```
 
 ## Quick start
 
-### 1. Install Forgewright as a plugin (recommended)
-
-Forgewright now ships one provider-neutral plugin source for **Codex** and **Claude Code**. It installs the entry workflow and specialist skills without requiring a second model subscription.
+### 1. Install as a Codex or Claude Code plugin (recommended)
 
 **Codex CLI**
 
@@ -132,19 +165,11 @@ claude plugin marketplace add buiphucminhtam/forgewright
 claude plugin install forgewright@forgewright-marketplace --scope user
 ```
 
-Start a fresh session after installation and ask for normal engineering work; trigger-only skill descriptions let the host discover the relevant skill on demand. The entry skill is an orchestration alias, so the canonical specialist inventory remains **84 skills**.
+Verify both installers in isolated profiles: `npm run verify:plugins`.
 
-The plugin is **skills-first and consent-gated**. Its bounded `PreToolUse` hook is inert until the user enables a global bootstrap policy; installation alone does not mutate projects or start local MCP/Pi/runtime setup.
+### 2. Build the full local toolchain & Docs Hub
 
-Verify both installers in isolated profiles:
-
-```bash
-npm run verify:plugins
-```
-
-### 2. Build the full local toolchain (advanced)
-
-Use **Node.js 22+**, **Python 3.11+**, and Git. The optional Pi package requires **Node.js 22.19+**. Clone the repository when you need Forge CLI, Docs Hub, MCP, local gates, or framework development:
+Requires **Node.js 22+**, **Python 3.11+**, and Git (Works on macOS, Linux, and Windows):
 
 ```bash
 git clone https://github.com/buiphucminhtam/forgewright.git
@@ -155,20 +180,16 @@ npm run build:cli
 node src/cli/dist/index.js --help
 ```
 
-`ci:bootstrap` installs checked-in verification dependencies and configures this clone's Git hooks. It does not enable Pi, start production services, or require hosted CI. Model calls use the provider/account you explicitly configure.
-
-Auto-bootstrap needs explicit policy consent and host hook trust. Start with `automation` mode and an explicit `--allow-root`, with Pi disabled and no MCP clients selected. Eligible descendants are included. Review the [auto-bootstrap guide](docs/guides/auto-bootstrap.md) before enabling it. Installation, trust and a completed hook event do not prove readiness. Check the actual bootstrap receipt and index after a native prompt. Earlier isolated macOS acceptance does not certify a later source or installed-cache update.
-
-You can inspect/onboard a local project without a model call:
+Initialize or onboard any local project without a model call, or build the local **Docs Hub** ([auto-bootstrap guide](docs/guides/auto-bootstrap.md), [Docs Hub guide](docs/guides/docs-hub.md)):
 
 ```bash
 node src/cli/dist/index.js --json init /path/to/your-project
 node src/cli/dist/index.js --json onboard /path/to/your-project
+node src/cli/dist/index.js docs build .
+node src/cli/dist/index.js docs doctor . --strict
 ```
 
-### 3. Pin the full framework inside a project (advanced)
-
-For a repository-pinned runtime and local MCP setup, keep the Git-submodule workflow:
+### 3. Pin as a Git submodule (advanced)
 
 ```bash
 git submodule add -b main https://github.com/buiphucminhtam/forgewright.git forgewright
@@ -176,143 +197,9 @@ git submodule update --init --recursive
 bash forgewright/scripts/forgewright-mcp-setup.sh
 ```
 
-Review generated configuration before adoption. A project submodule is still useful when the project must pin exact framework source, but global-policy auto-bootstrap does not require one.
-
-## What's new
-
-### Game design without universal style overrides
-
-The [full Game Designer skill](skills/game-designer/SKILL.md) now scopes GDD,
-research and output templates to the active studio phase and reuses approved
-artifacts. Express mode preserves readiness gates. Feedback examples defer to
-approved art direction instead of requiring gradients, particles, a fixed
-transition duration or one font in every game.
-
-This reconciles conflicting source instructions. REA research has not added a
-runtime integration or new reconstruction workflow; improved agent behavior,
-game fidelity and player experience remain unverified.
-
-### Evidence-led game skill evolution
-
-The [game skill evolution workflow](workflows/game-skill-evolution.md) connects
-original-source research, **impact assessment before edits**, staged candidates,
-baseline/current/candidate evaluation, review, bilingual README updates and
-authorized commit/push. It prioritizes game correctness and game feel, then VFX
-and target-device performance. Shared engineering habits are assessed through
-observable decisions and cross-role regressions.
-
-Each invocation handles one question and may end with no change or a precise
-evidence blocker. The workflow uses existing research and skill-quality tools;
-it does not install an evaluator or a recurring agent. Scheduled execution needs
-a separately configured host, budget and retained handoff. Desktop/web checks
-do not establish physical-device performance or player-outcome improvements.
-
-The observer now rejects missing or non-directory project roots before writing
-health metadata. Invalid roots retain an in-memory degraded health result,
-without creating a project directory or hanging on a nonexistent `/proc` path.
-
-### Browser tab guardrail
-
-[Guardrail Rule 15](skills/_shared/protocols/guardrail.md#15-browser-tab-lifecycle--deny-fail-closed)
-requires agents to reuse one owned browser tab, with at most two live interactive tabs across
-the task and its workers. Temporary opens require verified IDs and list/close
-capabilities; otherwise agents use fetch or saved artifacts. Cleanup covers
-success, errors and cancellation, with failed cleanup blocking further opens.
-Only an explicitly requested preview may remain, with one retained tab.
-Managed headless tests keep their bounded runner concurrency and verified teardown.
-The rule is included in generated agent instructions. It does not install
-native browser-host enforcement or guarantee cleanup after a host crash.
-
-Managed game playtests now acquire the existing shared host admission slots
-before opening their browser or emulator. The Three.js fixture reuses its page;
-Android uses a supervised foreground launcher; iOS accepts an explicit Shutdown
-UDID and closes only its confirmed owned boot. Uncertain cleanup quarantines
-capacity. [Game Test Protocol](skills/_shared/protocols/game-test-protocol.md#managed-browser-and-emulator-resources)
-documents the commands and limits. These checks govern the wired launchers;
-native tools outside them and actual Android/iOS host acceptance remain separate.
-
-### Game fixture and bounded memory
-
-**Local source candidate, not yet published.** Marketplace installation does not include unpublished checkout changes.
-
-[Signal Dash](tests/game/fixtures/threejs-lifecycle/README.md) is a playable Three.js reference with seeded fixed stepping, keyboard/touch controls, win/loss, pause and restart. Its checks compile the affected skill examples, exercise real browser input and record screenshots with a build hash. Run the fixture's build and tests, then `npm --prefix tests/game/fixtures/threejs-lifecycle run serve` to play locally.
-
-MCP result caching accounts for bytes, with a 512 KiB entry limit, 2 MiB per project and 8 MiB shared within one MCP process. Idle entries expire after five minutes. These bounds do not cap process RSS or remove source data. The [game test guide](tests/game/README.md) separates executable fixtures from engine templates, and the [Unity setup guide](docs/unity-mcp-setup.md) uses the project-matched Unity Test Framework. Unity execution and physical mobile performance still need their own evidence.
-
-### Plugin distribution + behavioral skill quality
-
-Codex and Claude share one plugin source and one `skills/` tree. Harness manifests reference that tree, avoiding copied skill packs.
-
-Skill changes are checked against observable behavior:
-
-| Upgrade | What it changes |
-| --- | --- |
-| Skill Quality Engine | Compares **baseline → current → candidate**, blocking regressions and forbidden behavior. |
-| Trigger-only metadata | Boot descriptions say when to load a skill. Its body owns execution details. |
-| Minimal worker packets | Digest-bound `PLAN_LOCKED` packets carry task scope, acceptance, constraints and verifier references. |
-| Scoped review packages | Reviews bind exact `BASE..HEAD` and an explicit task or release scope. |
-| Plan-scoped runtime state | State binds goal, plan and base SHA. Failed runs retain diagnostic evidence. |
-| Failure classification | Distinguishes hypothesis, implementation, environment and architecture faults. Two failed attempts require a new approach. |
-
-The engine itself is deterministic and provider-neutral. A real model benchmark remains separate evidence; Forgewright does not claim universal quality, token, or latency gains from the framework change alone.
-
-### Optional Pi execution, under Forgewright control
-
-The [Pi integration](integrations/pi/) adds an isolated worker option without replacing Hermes, the current dispatcher, or Forgewright's ownership of goals and acceptance.
-
-| Upgrade | Behavior |
-| --- | --- |
-| Pinned SDK | An independent lockfile pins `@earendil-works/pi-agent-core@0.85.1`; root installation does not install the optional package. |
-| Canonical host bridge | Uses the existing model/tool gateways, containment, lifecycle coordinator, and trajectory ledger. `start()` returns a session; `wait()` owns settlement. |
-| Explicit authority | Host-owned model, account, policy, tool registry, approvals, and scope; task text cannot grant permission. |
-| Account-level budgets | One billing-account cap spans multiple workspaces. Never-dispatched reservations are released; uncertain invoked calls retain escrow. |
-| Cancellation and deadlines | Late success cannot reopen a closed attempt. Cancellation also releases undispatched reservations when a binding callback hangs. |
-| Bounded context and receipts | Preserve acceptance and current bindings; missing native usage or price remains unavailable, not zero. |
-| Evaluation and rollback controls | Paired-report comparison plus default-off, single-active-worker canary admission, kill switch, and quarantine. |
-
-**Status: experimental, explicitly opt-in.** The public `delegate` CLI runs a Pi worker from the parent project using an existing authorized Codex/Pi subscription or an explicit loopback model server. Approved tasks name allowed files, compare-and-swap patches and immutable verifiers. There is no new paid API fallback.
-
-```bash
-npm --prefix integrations/pi ci --ignore-scripts --no-audit --no-fund
-npm run build
-npm run build:cli
-npm --prefix integrations/pi run test:all
-```
-
-After building the CLI and MCP above, run from the **parent project**, not inside its submodule:
-
-```bash
-node forgewright/src/cli/dist/index.js delegate on --worker pi --provider openai-codex --auth-source codex --model <exact-codex-model-id>
-node forgewright/src/cli/dist/index.js delegate status --worker pi
-node forgewright/src/cli/dist/index.js delegate run --worker pi --contract task.json
-node forgewright/src/cli/dist/index.js delegate resources
-# node forgewright/src/cli/dist/index.js delegate cancel <run-id>
-```
-
-Settings live in the parent's `.production-grade.yaml`, preserving unrelated settings. Prefer the explicit provider/model above. `current` only accepts compatible unprefixed Codex selections. `CODEX_HOME` is respected, subscription access is read-only, and expired authorization returns `pi_auth_required`. Existing quota still applies.
-
-Verifier isolation currently requires macOS and a single-process command. Fork/spawn, network and source writes are denied. Unsupported platforms and unmanaged legacy Agy execution fail closed. `ready` means prerequisites, not successful execution. The [Pi ADR](docs/adr/ADR-pi-worker-runtime.md) owns setup, cancellation, lifecycle and measurement contracts.
-
-### Leaner context and clearer project state
-
-System-1 routing now uses bounded English/Vietnamese rules and optional exact caching, then abstains when the intent is ambiguous. It does not import or call Jev, require `TYPESAFE_API_KEY`, download a classifier, or spend an extra model call. It takes Jev's bounded-choice approach without claiming to run the Jev model. Progressive skill loading and compact execution summaries keep unrelated context out of the worker.
-
-A shared per-user SQLite authority limits governed clients to two workers and one heavy verifier, or one worker on hosts with at most 8 GiB RAM. Admission considers OS pressure, load, known reservations, headroom and observed swap activity. On macOS, immediate pages and estimated reclaimable cache remain separate. Free pages alone do not measure available capacity.
-
-Default estimates of **192 MiB per Pi worker** and **128 MiB per single-process verifier** are scheduling budgets, not RSS caps or generic build measurements. The broker exits after 15 idle seconds, and cleanup is limited to owned resources. User apps and unsaved sessions stay outside automatic reclamation. Whole-build savings and temperature reduction remain unverified.
-
-The **Docs Hub** builds a searchable local HTML control center from approved Markdown/JSON. Project structure, roadmap, blockers, and Mermaid-derived flow views come from canonical sources—not another manually maintained dashboard.
-
-```bash
-node src/cli/dist/index.js docs build .
-node src/cli/dist/index.js docs doctor . --strict
-```
-
-Open `.forgewright/docs-hub/site/index.html`. See the [Docs Hub guide](docs/guides/docs-hub.md) for multi-project registration, privacy allowlists, and Obsidian export.
-
 ## Core Capabilities
 
-The maturity labels below follow the [capability inventory](docs/capability-maturity.json): **beta** means automated local evidence, **experimental** means incomplete production evidence, and **docs-only** means a documented integration or workflow—not a supported production runtime claim.
+Maturity labels follow the [capability inventory](docs/capability-maturity.json): **beta** means automated local evidence, **experimental** means incomplete production evidence, and **docs-only** means a documented integration or workflow rather than a production runtime claim.
 
 <details>
 <summary><strong>Explore all 14 capability areas</strong></summary>
@@ -377,54 +264,34 @@ The maturity labels below follow the [capability inventory](docs/capability-matu
 
 ## Verification
 
-Forgewright's evidence is executable locally. Hosted CI can mirror it, but is not required.
-
-The local game/resource upgrade has observed aggregate-gate and desktop Chromium passes on recorded snapshots. **End-to-end upgrade acceptance remains open** pending fresh final-tree HARD verification and native bootstrap/index/receipt proof. Installed cache is a separate state from live activation. Consult [canonical project status](docs/project-state.json) and current runtime receipts. Earlier passes do not certify later edits, cloud execution, Unity or physical mobile performance.
+All verification gates are local-first and provider-neutral. Check [canonical project status](docs/project-state.json) and the [roadmap completion manifest](docs/roadmap-completion.json), which separates **implementation, integration, activation, production evidence, and measured outcome**.
 
 ```bash
-# Core checks
-npm run lint
-npm run build
-npm test
-npm run typecheck:cli
-npm run build:cli
-
-# Documentation and declared roadmap contracts
+npm run lint && npm run build && npm test
+npm run typecheck:cli && npm run build:cli
 npm run ci:docs
 npm run verify:product-truth
 npm run verify:roadmap
 npm run verify:plugins
-
-# Complete project-owned local pipeline
+python3 scripts/ci/verify-readme.py
 npm run ci:local
 ```
 
-Run optional Pi tests separately with the commands above; they include contract checks, real-SDK runtime checks, and owner-gated workflows in separate Node processes. `python3 scripts/ci/verify-readme.py` checks both front pages and runs the documented init/onboard commands in a disposable project without a model call. The [roadmap completion manifest](docs/roadmap-completion.json) separates **implementation, integration, activation, production evidence, and measured outcome**. A passing unit suite, a signed commit, and an accepted product outcome are different things.
-
 ### Trust boundaries
 
-The core is provider-neutral; execution stays within the selected provider's configured ecosystem. Local-first does not mean all data stays on-device: a remote model may receive prompts, selected code, and tool results. Use an appropriate local runtime when that is required.
+Execution stays within your configured provider ecosystem. Local-first does not prevent remote models from receiving prompts or selected code unless you configure a local model runtime. Tool containment is application-level, not an OS kernel sandbox, and keyless `review-2` attestations bind exact evidence digests without authenticating against same-user forgery. See [SECURITY.md](SECURITY.md) and [release readiness](docs/process/release-readiness.md).
 
-Tool containment is application-level, not a kernel sandbox. Trusted host callbacks retain host privileges. Hash-bound evidence detects mismatches; it does not authenticate against a same-user attacker. Production Pi activation, live adaptive routing, and arbitrary autonomous process execution require their separate gates. See [security guidance](SECURITY.md) and the [active roadmap](docs/active-roadmap.md).
+## Documentation & contributing
 
-## Documentation
-
-| Start here | Purpose |
+| Guide | Purpose |
 | --- | --- |
-| [Product overview](docs/product-overview.md) | Scope, delivery model, and product direction. |
-| [Architecture](docs/architecture.md) / [pipeline reference](docs/pipeline-reference.md) | Components, ownership, and execution flow. |
-| [Quickstart details](docs/guides/forge-init-onboard.md) | Deterministic initialization and onboarding. |
-| [Docs Hub](docs/guides/docs-hub.md) | Source-backed local documentation and project views. |
-| [Visual grounding](skills/_shared/protocols/visual-grounding.md) | Design direction based on inspected references and evidence. |
-| [Game Studio](workflows/game-studio-build.md) | Game-production phases and handoff requirements. |
-| [Pi integration](docs/adr/ADR-pi-worker-runtime.md) | Optional worker architecture, limits, and rollout gates. |
-| [Capability inventory](docs/capability-maturity.json) / [active roadmap](docs/active-roadmap.md) | What exists, its maturity, and what remains open. |
-| [Changelog](CHANGELOG.md) | Maintained change history. |
+| [Product overview](docs/product-overview.md) | Scope, supported surfaces, and delivery model |
+| [Architecture](docs/architecture.md) / [pipeline](docs/pipeline-reference.md) | System components, ownership, and execution flow |
+| [Quickstart](docs/guides/forge-init-onboard.md) / [Docs Hub](docs/guides/docs-hub.md) | Project onboarding and local documentation portal |
+| [Visual grounding](skills/_shared/protocols/visual-grounding.md) | Evidence-based UI/UX and art direction rules |
+| [Unity setup](docs/unity-mcp-setup.md) / [Game tests](tests/game/README.md) | Game engine integration and playable fixtures |
+| [Active roadmap](docs/active-roadmap.md) / [Changelog](CHANGELOG.md) | Current status, blockers, and release history |
 
-## Contributing and support
-
-Bring a concrete problem, a bounded change, and the checks that demonstrate it. Preserve existing behavioral tests; include a failing reproduction for a fix, update the canonical documentation, and run the local gates before opening a pull request. Do not commit generated runtime evidence, credentials, or personal workspace state.
-
-Use [GitHub issues](https://github.com/buiphucminhtam/forgewright/issues) for reproducible bugs and proposals. Security reports follow [SECURITY.md](SECURITY.md). Package-specific licensing is declared in the relevant package metadata, including [the CLI's MIT declaration](src/cli/package.json); review those declarations and upstream dependency licenses before redistribution.
+Report issues via [GitHub issues](https://github.com/buiphucminhtam/forgewright/issues) and security findings via [SECURITY.md](SECURITY.md). Review package-specific license declarations such as [the CLI MIT license](src/cli/package.json) before redistribution.
 
 **Build with more leverage. Ship with evidence.**

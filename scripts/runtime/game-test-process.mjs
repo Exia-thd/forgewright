@@ -1,7 +1,7 @@
 /** Supervise a cooperative POSIX child group; never signal by name or port. */
 import {spawn} from 'node:child_process';
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const groupAlive=pid=>{try{process.kill(-pid,0);return true;}catch(error){if(error.code==='ESRCH')return false;throw error;}};
+const groupAlive=pid=>{try{process.kill(-pid,0);return true;}catch(error){if(error.code==='ESRCH')return false;if(process.platform==='darwin'&&error.code==='EPERM')return true;throw error;}};
 
 export async function runGameProcess(session,argv,{cwd=process.cwd(),onSpawn}={}) {
  if(process.platform==='win32')throw new Error('game_process_platform_unavailable');
@@ -16,7 +16,7 @@ export async function runGameProcess(session,argv,{cwd=process.cwd(),onSpawn}={}
  });
  // Attach rejection observation before registering ownership/awaiting work.
  void result.catch(()=>{});
- const terminate=signal=>{if(started&&groupAlive(child.pid))process.kill(-child.pid,signal);};
+ const terminate=signal=>{if(!started||!groupAlive(child.pid))return;try{process.kill(-child.pid,signal);}catch(error){if(error.code!=='ESRCH'&&!(process.platform==='darwin'&&error.code==='EPERM'))throw error;}};
  const abort=()=>{try{terminate('SIGTERM');}catch{/* Final cleanup retains the slot on failure. */}};
  session.signal.addEventListener('abort',abort,{once:true});
  let bytes=0;
