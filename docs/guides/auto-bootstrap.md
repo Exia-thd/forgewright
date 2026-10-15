@@ -1,3 +1,12 @@
+---
+title: Consent-Gated Project Auto-Bootstrap
+status: active
+owner: Runtime maintainers
+scope: Opt-in project bootstrap and shared runtime setup
+last_reviewed: 2026-10-15
+canonical: false
+---
+
 # Consent-Gated Project Auto-Bootstrap
 
 Forgewright can bootstrap new repositories automatically after a **one-time explicit machine-level opt-in**. Plugin installation by itself remains non-mutating.
@@ -142,7 +151,9 @@ file and retains the original bytes. The namespaced registry takes precedence
 once present. Unknown schemas and malformed files fail closed, including a
 malformed namespaced file beside valid old bootstrap data.
 
-Each project has a lock and an ownership journal in the user-owned global bootstrap store, outside the repository. A project-local `bootstrap.json` hash is not deletion authority: cleanup receipts must match that trusted journal. Failed stages roll back only confirmed Forgewright-owned effects and leave unrelated project files untouched. Global host admission serializes workers on hosts with at most 8 GiB RAM and allows at most one heavy stage. Higher-memory hosts admit at most two workers. Memory pressure, unavailable pressure telemetry and high normalized OS load backpressure new requests with a 15-second recovery hold. Active user sessions are never suspended or killed to reclaim capacity. This governs cooperating adapters, not arbitrary IDE terminals or applications. See [host resource contract](../adr/ADR-pi-worker-runtime.md) for telemetry and platform limits.
+Each project has a lock and an ownership journal in the user-owned global bootstrap store, outside the repository. A project-local `bootstrap.json` hash is not deletion authority: cleanup receipts must match that trusted journal. Failed stages roll back only confirmed Forgewright-owned effects and leave unrelated project files untouched. Global host admission serializes workers on hosts with at most 8 GiB RAM and allows at most one heavy stage. Higher-memory hosts admit at most two workers. Critical or unknown memory pressure and high normalized OS load backpressure new requests with a 15-second recovery hold. Stable warning pressure permits one worker when its larger memory reserve fits.
+
+On macOS, normal pressure may use discounted file cache plus a bounded share of currently free swap after the existing observation window. Swap credit is at most `min(512 MiB, RAM / 16, free swap / 2)` and remains subject to the swap I/O reserve, worker/heavy reservations and concurrency caps. Low free-page RAM alone therefore need not prevent a bootstrap worker and its verifier from progressing. Missing optional swap-capacity telemetry falls back to the existing RAM/cache calculation; the policy does not grow swap files or promise capacity when pressure is critical. Active user sessions are never suspended or killed to reclaim capacity. This governs cooperating adapters, not arbitrary IDE terminals or applications. See [host resource contract](../adr/ADR-pi-worker-runtime.md) for telemetry and platform limits.
 
 Queued worker and heavy-stage requests can wait up to 60 seconds for capacity within the existing 90-second operation budget. This allows concurrent projects to take turns without raising the memory or concurrency limits. A host that cannot supply capacity within that budget still fails explicitly and releases its queued reservation.
 

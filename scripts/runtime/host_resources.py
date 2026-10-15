@@ -27,6 +27,8 @@ class MemorySnapshot:
     reclaimable_estimate_bytes: int = 0
     swap_total_bytes: int | None = None
     immediate_bytes: int | None = None
+    # Currently provisioned free swap, not cumulative I/O or future disk growth.
+    swap_free_bytes: int | None = None
 
     @property
     def worker_limit(self) -> int:
@@ -106,6 +108,19 @@ def inspect_process(pid: int) -> str | None:
         return None
 
 
+def darwin_swap_free_bytes() -> int | None:
+    """Optional capacity signal; probe failure must not discard RAM telemetry."""
+    try:
+        raw = command(["/usr/sbin/sysctl", "-n", "vm.swapusage"])
+        match = re.search(r"\bfree\s*=\s*(\d+(?:\.\d+)?)([KMG])(?:\s|$)", raw)
+        if match is not None:
+            scale = {"K": 1024, "M": MIB, "G": GIB}[match[2]]
+            return int(float(match[1]) * scale)
+    except (OSError, ValueError, OverflowError, subprocess.SubprocessError):
+        pass
+    return None
+
+
 def memory_snapshot() -> MemorySnapshot:
     """Use OS pressure and available/reclaimable memory, not free percent alone."""
     try:
@@ -159,6 +174,7 @@ def memory_snapshot() -> MemorySnapshot:
                 reclaimable,
                 swap_total,
                 available,
+                swap_free_bytes=darwin_swap_free_bytes(),
             )
         if sys.platform.startswith("linux"):
             rows = dict(

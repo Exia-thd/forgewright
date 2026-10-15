@@ -2,8 +2,8 @@
 title: Optional Pi Worker Runtime
 status: accepted-for-pilot
 owner: Runtime maintainers
-scope: Optional execution adapter; no production activation
-last_reviewed: 2026-10-04
+scope: Optional execution adapter and shared host admission; no production activation
+last_reviewed: 2026-10-15
 canonical: true
 ---
 
@@ -129,16 +129,35 @@ window on every poll: it restricts admission to one worker with unchanged
 Ordinary swap activity alone is not memory pressure.
 The larger of the latest sampled rate and the elapsed-time-weighted rate in the
 current window (at most 30 seconds) is multiplied by the existing 15-second recovery
-interval. This byte-valued heuristic reserve is subtracted only from discounted
-cache credit, clamped at zero. Swap I/O is not RAM allocation, so this projection
+interval. This byte-valued heuristic reserve is subtracted from the combined
+discounted cache and bounded swap credit, clamped at zero. Swap I/O is not RAM allocation, so this projection
 is explicitly a risk reserve, not a physical consumption measurement. Headroom
 and known reservations remain separate. Large sustained swap or a recent spike
-can exhaust cache credit without vetoing ample immediate memory under normal
+can exhaust estimated credit without vetoing ample immediate memory under normal
 pressure. No swap-rate cutoff or reduced headroom is introduced.
 Only one worker may use this estimated budget even on larger Macs.
 
-`availableMiB` is the current admission budget, including discounted cache only
-after observation. `headroomMiB` remains 512 on this 8 GiB machine. Known active
+The 2026-10-15 owner requirement relaxes false RAM starvation by allowing a
+small, explicit swap budget under **normal** macOS memory pressure. The optional
+`sysctl -n vm.swapusage` probe reads currently provisioned free swap separately
+from cumulative I/O. After the same healthy observation window, gross
+`swapCreditMiB` is bounded by `min(512 MiB, physical RAM / 16, free swap / 2)`.
+This leaves at least half of the reported free swap uncredited and never assumes
+future swap-file growth or spare disk space. Warning pressure receives no swap
+credit and retains its existing cache-only budget and 1,024 MiB headroom.
+Critical/unknown pressure, high load, stale observations and counter resets
+retain their admission/recovery behavior. If the optional capacity probe fails,
+is missing or cannot be parsed, swap credit is zero and existing RAM/cache
+telemetry continues to work. Other platforms retain their previous policy.
+
+`availableMiB` is the current admission budget, including discounted cache and
+eligible swap credit only after observation:
+`min(physical RAM, immediate + max(0, discounted cache + swap credit - swap reserve))`.
+`swapFreeMiB` is the current capacity reading or null; `swapCreditMiB` is the
+gross policy credit before the I/O reserve. `memoryUncertainty` reports
+`discounted-file-cache+bounded-swap` while that credit is included; neither
+field claims that swap is physical RAM or a guaranteed allocation.
+`headroomMiB` remains 512 on this 8 GiB machine. Known active
 and quarantined reservations are subtracted before each grant. Thus a 192 MiB
 worker needs a 704 MiB budget, and its 128 MiB heavy stage needs 832 MiB including
 the worker reservation. Neither number is a measured OS allocation requirement.
@@ -147,7 +166,7 @@ net cache credit can progress despite low free pages and modest swap activity.
 Under warning, a 192 MiB Pi worker needs a 1,216 MiB net budget; its 128 MiB heavy
 stage needs 1,344 MiB including the worker reservation. These estimates preserve
 the larger warning headroom and do not guarantee that every warning sample can
-run a task. The swap reserve can exhaust cache credit; it is not an independently
+run a task. The swap reserve can exhaust the combined estimated credit; it is not an independently
 verified thrashing detector or a hard RSS limit.
 Insufficient estimated budget remains queued and is never overridden by elapsed
 queue time. `swapCumulativeBytes` is historical activity, while

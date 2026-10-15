@@ -14,6 +14,7 @@ import time
 class HostScheduler(AdmissionStore):
     def pressure(self):
         sample = self.sensor()
+        self.set_meta("swap_credit_bytes", 0)
         if sample.source != "darwin-vm-stat+memorystatus":
             self.set_meta("estimate_previous_valid", 0)
         if (
@@ -22,6 +23,13 @@ class HostScheduler(AdmissionStore):
             or sample.available_bytes < 0
             or sample.reclaimable_estimate_bytes < 0
             or (sample.swap_total_bytes is not None and sample.swap_total_bytes < 0)
+            or (
+                sample.swap_free_bytes is not None
+                and (
+                    type(sample.swap_free_bytes) is not int
+                    or sample.swap_free_bytes < 0
+                )
+            )
             or (
                 sample.load_ratio is not None
                 and (not math.isfinite(sample.load_ratio) or sample.load_ratio < 0)
@@ -100,13 +108,25 @@ class HostScheduler(AdmissionStore):
             if not ready:
                 self.set_meta("blocked_until", now)
                 return sample, 1, True
+            # Normal OS pressure permits bounded use of already provisioned
+            # swap. Keep half free and cap credit by RAM and 512 MiB. Warning
+            # retains the existing cache-only budget and larger headroom.
+            swap_credit = (
+                min(512 * MIB, sample.total_bytes // 16, sample.swap_free_bytes // 2)
+                if sample.pressure == "normal" and sample.swap_free_bytes is not None
+                else 0
+            )
+            self.set_meta("swap_credit_bytes", swap_credit)
             sample = replace(
                 sample,
                 immediate_bytes=sample.available_bytes,
                 available_bytes=min(
                     sample.total_bytes,
                     sample.available_bytes
-                    + max(0, sample.reclaimable_estimate_bytes - swap_reserve),
+                    + max(
+                        0,
+                        sample.reclaimable_estimate_bytes + swap_credit - swap_reserve,
+                    ),
                 ),
             )
         if (
@@ -208,12 +228,18 @@ class HostScheduler(AdmissionStore):
                 // MIB,
                 "reclaimableEstimateMiB": sample.reclaimable_estimate_bytes // MIB,
                 "swapCumulativeBytes": sample.swap_total_bytes,
+                "swapFreeMiB": sample.swap_free_bytes // MIB
+                if sample.swap_free_bytes is not None
+                else None,
+                "swapCreditMiB": int(self.meta("swap_credit_bytes") // MIB),
                 "swapReserveMiB": int(self.meta("swap_reserve_bytes") // MIB),
                 "swapBytesPerSecond": self.meta("swap_rate")
                 if sample.swap_total_bytes is not None and self.meta("swap_rate") >= 0
                 else None,
                 "headroomMiB": sample.headroom // MIB,
-                "memoryUncertainty": "discounted-file-cache"
+                "memoryUncertainty": "discounted-file-cache+bounded-swap"
+                if self.meta("swap_credit_bytes") > 0
+                else "discounted-file-cache"
                 if sample.source == "darwin-vm-stat+memorystatus"
                 else "os-estimate",
                 "reservedMiB": sum(
