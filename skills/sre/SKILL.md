@@ -254,14 +254,14 @@ spec:
   budget_policy:
     burn_rate_alerts:
       - name: fast-burn
-        threshold: 14.4  # 1h burn = 6h remaining (1% of 30d)
+        threshold: 14.4  # 2% of the full 30-day budget consumed in 1 hour
         severity: critical
-        message: "Error budget burning fast - less than 6 hours remaining"
+        message: "Fast budget consumption - inspect remaining budget and alert windows"
         
       - name: slow-burn
-        threshold: 6.0  # 4h burn = 24h remaining
+        threshold: 6.0  # 5% of the full 30-day budget consumed in 6 hours
         severity: warning
-        message: "Error budget depleting - less than 24 hours remaining"
+        message: "Sustained budget consumption - inspect remaining budget and alert windows"
     
     actions:
       - when: budget_exhausted < 50%
@@ -279,12 +279,14 @@ spec:
 
 ### SLO Decision Framework
 
+These are **time-based availability** examples over 24 hours: `86400 × (1 − SLO/100)` seconds. Request-based SLOs instead budget failed eligible requests; traffic volume changes their time equivalent. Burn rate is a consumption multiplier, not a remaining-lifetime estimate. See the [Google SRE Workbook](https://sre.google/workbook/alerting-on-slos/).
+
 | Service Tier | Availability SLO | Latency SLO | Error Budget/Day |
 |--------------|-----------------|-------------|------------------|
-| **Tier 1 (Revenue)** | 99.9% | p95 < 200ms | 8.6s |
-| **Tier 2 (Core)** | 99.5% | p95 < 500ms | 43.8s |
-| **Tier 3 (Internal)** | 99.0% | p95 < 1s | 87.6s |
-| **Tier 4 (Experiments)** | 95.0% | p95 < 5s | 4.4min |
+| **Tier 1 (Revenue)** | 99.9% | p95 < 200ms | 86.4s |
+| **Tier 2 (Core)** | 99.5% | p95 < 500ms | 432s |
+| **Tier 3 (Internal)** | 99.0% | p95 < 1s | 864s |
+| **Tier 4 (Experiments)** | 95.0% | p95 < 5s | 72min |
 
 ---
 

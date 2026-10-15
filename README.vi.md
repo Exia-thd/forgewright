@@ -145,6 +145,26 @@ node forgewright/src/cli/dist/index.js delegate run --worker pi --contract task.
 node forgewright/src/cli/dist/index.js delegate resources
 ```
 
+### 6. Research chuyên môn trên toàn bộ skill
+
+[Catalog skill](docs/skill-catalog.md) bao phủ **84 skill chính và 3 alias**, với
+**168 câu hỏi theo chuyên môn** và cách kiểm chứng riêng. Bảy skill có bản sửa
+reference/ví dụ giới hạn: Game Engineer, API Designer, Solution Architect,
+MCP Generator, Eval Engineer, SRE và XLSX Engineer. So sánh thực thi ghi nhận đạn
+đi khoảng 20/10/5 → 600 pixel trong một giây ở 30/60/120 FPS trong mô hình API
+Arcade, `$ref` OpenAPI được giải đúng, bộ chấm không lấy confidence làm bằng chứng,
+và ví dụ workbook đã lưu rồi mở lại được.
+
+Template MCP mới pin GitNexus 1.6.12, yêu cầu Node `^22.18.0 || >=24.11.0`.
+Kiểm tra qua SDK/CLI thật trên Linux/Node 24.19 xác minh tham số giữ nguyên và cwd
+đúng project khi chạy source lẫn bản compile. Server đã generate cần được tạo lại
+theo quy trình của project; Node 22/Windows và chất lượng tìm kiếm chưa được xác minh.
+Đây là sửa reference, kèm phiên agent độc lập tìm và áp dụng tài liệu, chưa phải
+benchmark model lặp lại hay bằng chứng game feel/trải nghiệm người chơi tốt hơn.
+Candidate buffer Godot được giữ lại vì chính sách xử lý tràn đề xuất xung đột với
+consumer reconciliation hiện có. Catalog ghi rõ các candidate và bằng chứng còn
+thiếu; audit không đồng nghĩa phải sửa mọi skill.
+
 ## Bắt đầu
 
 ### 1. Cài đặt dưới dạng Plugin cho Codex hoặc Claude Code (khuyến nghị)

@@ -84,9 +84,9 @@ def create_formatted_report(filename: str):
         cell.border = double_border
 
     # 5. Column Autoscaling (Avoid truncated cell text)
-    for col in ws.columns:
+    for column_index, col in enumerate(ws.columns, start=1):
         max_len = 0
-        col_letter = get_column_letter(col.column)
+        col_letter = get_column_letter(column_index)
         for cell in col:
             if cell.value:
                 max_len = max(max_len, len(str(cell.value)))
@@ -100,6 +100,6 @@ create_formatted_report("output-report.xlsx")
 
 ### Step 3: Run the script to generate and verify file integrity
 ```bash
-python3 scripts/build_report.py
+python3 scripts/build-report.py
 file output-report.xlsx
 ```

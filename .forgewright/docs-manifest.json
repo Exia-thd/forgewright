@@ -112,6 +112,10 @@
     {
       "path": "skills/_shared/protocols/visual-grounding.md",
       "type": "operations"
+    },
+    {
+      "path": "docs/skill-catalog.md",
+      "type": "operations"
     }
   ],
   "project_docs": {
@@ -168,7 +172,8 @@
       "tests/game/fixtures/threejs-lifecycle/README.md",
       "skills/game-designer/SKILL.md",
       "skills/_shared/protocols/game-studio-pipeline.md",
-      "skills/_shared/protocols/visual-grounding.md"
+      "skills/_shared/protocols/visual-grounding.md",
+      "docs/skill-catalog.md"
     ],
     "exclude": [
       "docs/archive/**",

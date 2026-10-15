@@ -14,13 +14,16 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { execSync } from "child_process";
+import { execFileSync } from "node:child_process";
+import { createRequire, findPackageJSON } from "node:module";
 import { resolve, dirname } from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const PROJECT_ROOT = resolve(__dirname, "../../..");
+const serverPackage = findPackageJSON(import.meta.url);
+if (!serverPackage) throw new Error("Generated MCP package.json not found");
+// Source server.ts and compiled dist/server.js share this package root.
+const PROJECT_ROOT = resolve(dirname(serverPackage), "../..");
+const resolvePackage = createRequire(import.meta.url);
+const GITNEXUS_CLI = resolvePackage.resolve("gitnexus/dist/cli/index.js");
 
 process.title = "{{projectNameLowerCase}}-mcp";
 
@@ -44,7 +47,7 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        query: { type: "string", description: "Concept query" }
+        query: { type: "string", minLength: 1, maxLength: 4096, description: "Concept query" }
       },
       required: ["query"]
     }
@@ -55,7 +58,7 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        name: { type: "string", description: "Symbol name" }
+        name: { type: "string", minLength: 1, maxLength: 4096, description: "Symbol name" }
       },
       required: ["name"]
     }
@@ -66,7 +69,7 @@ const tools = [
     inputSchema: {
       type: "object",
       properties: {
-        target: { type: "string", description: "Target symbol name" }
+        target: { type: "string", minLength: 1, maxLength: 4096, description: "Target symbol name" }
       },
       required: ["target"]
     }
@@ -75,10 +78,22 @@ const tools = [
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
-// Run GitNexus CLI commands and grab the console output
-function runGitnexus(command: string): string {
+// Node receives a fixed CLI entrypoint and an argv vector; tool input never enters a shell.
+// See https://nodejs.org/docs/latest-v24.x/api/child_process.html#child_processexecfilefile-args-options-callback
+function runGitnexus(command: "query" | "context" | "impact", value: unknown): string {
+  if (typeof value !== "string" || !value.trim() || value.length > 4096 || value.includes("\0")) {
+    throw new Error("Expected a non-empty string of at most 4096 characters");
+  }
   try {
-    return execSync(`gitnexus ${command}`, { cwd: PROJECT_ROOT, encoding: "utf8" });
+    return execFileSync(process.execPath, [GITNEXUS_CLI, command, "--", value], {
+      cwd: PROJECT_ROOT,
+      encoding: "utf8",
+      shell: false,
+      timeout: 10000,
+      maxBuffer: 256 * 1024,
+      windowsHide: true,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
   } catch (error: any) {
     return `Error: ${error.message}\nStdout: ${error.stdout || ""}\nStderr: ${error.stderr || ""}`;
   }
@@ -88,15 +103,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
   
   if (name === "project_query") {
-    const res = runGitnexus(`query "${args?.query || ""}"`);
+    const res = runGitnexus("query", args?.query);
     return { content: [{ type: "text", text: res }] };
   }
   if (name === "project_context") {
-    const res = runGitnexus(`context "${args?.name || ""}"`);
+    const res = runGitnexus("context", args?.name);
     return { content: [{ type: "text", text: res }] };
   }
   if (name === "project_impact") {
-    const res = runGitnexus(`impact "${args?.target || ""}"`);
+    const res = runGitnexus("impact", args?.target);
     return { content: [{ type: "text", text: res }] };
   }
   

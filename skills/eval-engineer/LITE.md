@@ -31,31 +31,41 @@ cat .production-grade.yaml
 cat .forgewright/budget.yaml
 ```
 
-### Step 2: Run a secure prompt completion assertion in `tests/eval_prompt.py`
+### Step 2: Check a curated exact-answer fixture in `tests/eval_prompt.py`
+
+This narrow example checks an independent expected answer and permitted source IDs. A model confidence field cannot certify correctness. Missing oracle is `UNVERIFIED`; general answers and citation entailment need a task-specific grader. See [evaluation guidance](https://platform.openai.com/docs/guides/evaluation-best-practices).
 ```python
 import json
 
-def calculate_quality_score(completion_text: str) -> dict:
-    # Grounded Check: Ensure structured output holds valid JSON properties
+def calculate_quality_score(
+    completion_text: str,
+    expected_answer: str | None = None,
+    allowed_citations: set[str] | None = None,
+) -> dict:
+    # Toy exact-answer fixture: the curator supplies the oracle, never the model.
+    failure = {"score": 0, "grade": "F", "status": "FAIL"}
     try:
         data = json.loads(completion_text)
-        confidence = data.get("confidence", 0.0)
-        has_citations = len(data.get("citations", [])) > 0
+    except (json.JSONDecodeError, TypeError):
+        return failure
+    if not isinstance(data, dict):
+        return failure
+    answer, citations = data.get("answer"), data.get("citations")
+    if not isinstance(answer, str) or not answer.strip():
+        return failure
+    if not isinstance(citations, list) or not citations or any(
+        not isinstance(citation, str) or not citation.strip() for citation in citations
+    ):
+        return failure
+    if expected_answer is None or allowed_citations is None:
+        return {"score": None, "grade": None, "status": "UNVERIFIED"}
+    correct = answer == expected_answer and all(
+        citation in allowed_citations for citation in citations
+    )
+    return {"score": 100, "grade": "A", "status": "PASS"} if correct else failure
 
-        # Scoring metrics mapping to standard Quality Gate (0-100)
-        score = 0
-        if confidence > 0.8:
-            score += 50
-        if has_citations:
-            score += 50
-
-        grade = "A" if score >= 90 else "B" if score >= 80 else "F"
-        return {"score": score, "grade": grade, "status": "PASS" if score >= 90 else "FAIL"}
-    except (json.JSONDecodeError, TypeError) as err:
-        return {"score": 0, "grade": "F", "status": "FAIL", "error": str(err)}
-
-# Validate mock output completion
-print(calculate_quality_score('{"confidence": 0.95, "citations": [""]}'))
+# This schema check is not factuality or source-entailment evaluation.
+print(calculate_quality_score('{"answer": "Paris", "citations": ["source-france"]}'))
 ```
 
 ### Step 3: Run the prompt validator and check token usage metrics

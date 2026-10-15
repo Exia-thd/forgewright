@@ -1,218 +1,187 @@
-# Skill Catalog
-
-> **Complete reference of all Forgewright skills**
-
-Forgewright includes 55+ skills organized into 8 categories. Skills are loaded on-demand based on the detected mode.
-
-## Skill Categories
-
-| Category | Count | Skills |
-|---------|-------|--------|
-| [Orchestration](#orchestration) | 4 | Orchestrator, Polymath, Parallel Dispatch, Memory Manager |
-| [Engineering](#engineering) | 12 | Fullstack Engineer, Code Quality Engineer, etc. |
-| [Game Development](#game-development) | 15 | Unity, Unreal, Godot, Roblox, Phaser 3, Three.js |
-| [AI/ML](#aiml) | 4 | AI Engineer, Prompt Engineer, Data Scientist, NotebookLM |
-| [DevOps](#devops) | 5 | DevOps, SRE, Database Engineer, Performance Engineer, Security |
-| [Design](#design) | 6 | UX Researcher, Concept Artist, Art Director, UI Designer, Interaction Designer, etc. |
-| [Growth](#growth) | 3 | Growth Marketer, Conversion Optimizer |
-| [Meta](#meta) | 5 | Skill Maker, MCP Generator, Project Manager, etc. |
-
-## Orchestration
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **production-grade** | Main orchestrator - routes requests to appropriate skills | Always - this is the entry point |
-| **polymath** | General-purpose problem solver with broad knowledge | "Help me think about...", ambiguous requests |
-| **parallel-dispatch** | Coordinates parallel task execution | Complex tasks with multiple parallel paths |
-| **memory-manager** | Memory retrieval and persistence | Session continuity, context restoration |
-
-## Engineering
-
-### Consolidated Skills (v9.0)
-
-| Skill | Consolidated From | Description |
-|-------|-------------------|-------------|
-| **fullstack-engineer** | software-engineer + frontend-engineer | Backend + frontend development |
-| **code-quality-engineer** | debugger + code-reviewer + qa-engineer | Debugging, code review, testing |
-
-### Specialized Engineering
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **api-designer** | API contract design | "Design the API for..." |
-| **database-engineer** | Data modeling, migrations | "Add a database table...", "migrate schema" |
-| **mobile-engineer** | React Native, Flutter, iOS, Android | "Build a mobile app" |
-| **accessibility-engineer** | a11y audits and implementation | "Make this accessible", WCAG compliance |
-| **build-release-engineer** | CI/CD, build systems | "Set up the build pipeline" |
-
-## Game Development
-
-### Consolidated as Meta-Skill (v9.0)
-
-| Meta-Skill | Sub-Engines | Description |
-|-----------|--------------|-------------|
-| **game-engineer** | unity, unreal, godot, roblox, phaser3, threejs | Unified game development orchestrator |
-
-### Game Engine Skills
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **unity-engineer** | Unity 3D game development | "Build a Unity game" |
-| **unreal-engineer** | Unreal Engine development | "Build an Unreal game" |
-| **godot-engineer** | Godot engine development | "Build a Godot game" |
-| **roblox-engineer** | Roblox experience development | "Build a Roblox game" |
-| **phaser3-engineer** | HTML5 2D games | "Build an HTML5 game" |
-| **threejs-engineer** | WebGL 3D experiences | "Build a Three.js experience" |
-
-### Game Design Skills
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **game-designer** | Game mechanics, balance | "Design game mechanics" |
-| **level-designer** | Level creation, difficulty curves | "Create a level" |
-| **narrative-designer** | Story, dialogue, world-building | "Write the game story" |
-| **game-audio-engineer** | Sound effects, music | "Add game audio" |
-| **game-asset-vfx** | Real-time particles, game feel, combo/win, environment animation, VFX optimization (EN/VI) | "Improve game feel" / "Thêm hiệu ứng combo cho game" |
-| **technical-artist** | Graphics optimization, shaders | "Optimize game graphics" |
-
-See [Game VFX selection](guides/game-vfx.md) for bilingual triggers, exclusions,
-engine references and native/local installation behavior.
-
-## AI/ML
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **ai-engineer** | AI features, RAG, LLM integration | "Add AI to my app", "build a chatbot" |
-| **prompt-engineer** | Prompt engineering and optimization | "Improve this prompt", "write better prompts" |
-| **prompt-optimizer** | DSPy algorithmic optimization | "Optimize prompts systematically" |
-| **data-scientist** | Data analysis, ML pipelines | "Analyze this dataset" |
-| **notebooklm-researcher** | NotebookLM integration | "Research this topic", "create a notebook" |
-| **web-scraper** | Web data extraction | "Scrape this website", "collect data" |
-
-## DevOps
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **devops** | CI/CD, Docker, Kubernetes | "Set up CI/CD", "dockerize this" |
-| **sre** | Site reliability, monitoring | "Improve reliability", "set up alerting" |
-| **database-engineer** | Data modeling, migrations | "Design the database", "migrate data" |
-| **performance-engineer** | Performance optimization | "Make this faster", "optimize" |
-| **security-engineer** | Security audits, hardening | "Audit security", "penetration test" |
-
-## Design
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **ux-researcher** | User research, usability testing | "Research user needs" |
-| **concept-artist** | Divergent visual concepts and selected concept packets | "Explore visual directions" |
-| **art-director** | Style DNA, visual gates, and production art direction | "Define the visual style" |
-| **ui-designer** | UI design, visual systems | "Design the interface" |
-| **interaction-designer** | Micro-interactions, animations | "Design the interactions" |
-| **vision-review** | AI-generated art quality check | "Review AI-generated assets" |
-| **accessibility-engineer** | Accessibility audits | "Check accessibility" |
-
-## Growth
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **growth-marketer** | Marketing strategy, campaigns | "Market my product" |
-| **conversion-optimizer** | A/B testing, funnel optimization | "Improve conversions" |
-
-## Meta
-
-| Skill | Description | Use When |
-|-------|-------------|-----------|
-| **skill-maker** | Create new skills | "I need a custom skill" |
-| **mcp-generator** | Generate MCP configurations | "Set up MCP for this project" |
-| **project-manager** | Project planning, tracking | "Plan this project" |
-| **product-manager** | Product strategy, roadmaps | "Plan the product" |
-| **business-analyst** | Requirements analysis | "Analyze requirements" |
-| **solution-architect** | Architecture design | "Design the architecture" |
-| **technical-writer** | Documentation | "Write docs" |
-| **autonomous-testing** | Self-healing E2E tests | "Run autonomous tests" |
-| **goal-driven** | Autonomous goal pursuit | "Keep working until..." |
-| **token-tracker** | Context window monitoring | "Track token usage" |
-
-## Skill Versioning (v9.0)
-
-Each skill now has a `VERSION` file with semver tracking:
-
-| Version | Meaning |
-|---------|---------|
-| PATCH | Bug fixes, docs |
-| MINOR | New features, backward-compatible |
-| MAJOR | Breaking changes |
-
-### Backup and Rollback
-
-```bash
-# Backup before changes
-bash scripts/skill-backup.sh <skill-name>
-
-# List available versions
-bash scripts/skill-rollback.sh --list <skill-name>
-
-# Rollback to previous version
-bash scripts/skill-rollback.sh <skill-name>
-```
-
-## Skill Dependencies
-
-```
-production-grade (orchestrator)
-    ├── business-analyst (BA)
-    ├── product-manager (PM)
-    ├── solution-architect (Architect)
-    ├── fullstack-engineer
-    │   ├── api-designer
-    │   └── database-engineer
-    ├── code-quality-engineer
-    │   ├── debugger
-    │   ├── code-reviewer
-    │   └── qa-engineer
-    ├── devops
-    ├── security-engineer
-    ├── game-engineer (meta-skill)
-    │   ├── unity-engineer
-    │   ├── unreal-engineer
-    │   ├── godot-engineer
-    │   ├── roblox-engineer
-    │   ├── phaser3-engineer
-    │   └── threejs-engineer
-    └── [many more...]
-```
-
-## Finding Skills
-
-### By Task
-
-```markdown
-# I want to...
-"build an app"           → fullstack-engineer
-"fix a bug"             → code-quality-engineer
-"write tests"           → code-quality-engineer
-"review code"           → code-quality-engineer
-"design the UI"         → ui-designer
-"set up CI/CD"          → devops
-"build a Unity game"    → game-engineer (routes to unity-engineer)
-"add AI features"        → ai-engineer
-```
-
-### By Category
-
-| Category | Skills |
-|---------|--------|
-| Web Dev | fullstack-engineer, api-designer |
-| Quality | code-quality-engineer |
-| Game Dev | game-engineer, [engine] |
-| AI/ML | ai-engineer, prompt-engineer |
-| DevOps | devops, sre, security-engineer |
-| Design | ux-researcher, ui-designer |
-
-## Creating Custom Skills
-
-See the [Skill Maker](../skills/skill-maker/SKILL.md) skill for creating custom skills.
-
+---
+title: Skill catalog and specialist evaluation map
+description: Registered skill discovery, professional research questions and evidence boundaries
+status: active
+owner: Forgewright skill maintainers
+scope: Canonical skill discovery and supporting specialist evaluation reference
+last_reviewed: 2026-10-15
 ---
 
-*Skill Catalog version: 1.0 | Updated: 2026-05-29*
+# Skill Catalog
+
+The inventory authority is [`skills/skills-registry.yaml`](https://github.com/buiphucminhtam/forgewright/blob/main/skills/skills-registry.yaml): **84 canonical skills and 3 routing aliases**. This catalog is a supporting discovery and evaluation map, loaded on demand. It does not replace the compact kernel routing table, runtime capability checks, pipeline authority or each skill's full/LITE guidance.
+
+Each canonical role below has two profession-specific research questions and a proposed domain verifier. These are questions and acceptance targets, **not passing benchmark results**. A skill must add domain authority, inputs, judgment, artifacts, failure modes, verifiers and handoff under the [specialization contract](../skills/_shared/protocols/skill-specialization-contract.md).
+
+For visual and game work, **concept-artist** explores distinct directions and
+hands off the selected concept packet; **art-director** then owns Style DNA and
+production art gates. This follows UX/research and precedes UI/technical/engine
+handoff under the existing [Game Studio pipeline](../skills/_shared/protocols/game-studio-pipeline.md),
+preserving approved artifacts and the active phase's gates.
+
+## Reading the evidence
+
+The 2026-10-15 source audit inspected all 84 canonical full/LITE pairs and all 3 aliases, asking 168 specialist questions. It retained 101 source records: 96 read/hashed records (86 external records, 84 distinct external URLs), with 5 inaccessible or insufficient sources explicitly unverified. A read source supports only its applicable claim; it is not proof that a skill improves outcomes.
+
+- **REFERENCE FIX:** one bounded source/example correction is applied with before/after evidence; other verifier targets in the row may remain unmet.
+- **CANDIDATE:** a concrete issue or material gap warrants further work; it is not an approved upgrade.
+- **UNVERIFIED:** evidence is insufficient to justify a quality claim or apply an upgrade.
+- **NO CHANGE:** inspection did not justify a change; this does not certify runtime, agent or professional quality.
+
+The current dispositions are 7 bounded reference fixes, 44 remaining candidates, 20 unverified skills and 13 without a supported change. Raw task reports, model outputs and source snapshots remain transient; the reusable questions and applicable original-source links are retained here.
+
+## Proven reference corrections
+
+| Skill | Observed problem and correction | Evidence boundary |
+| --- | --- | --- |
+| game-engineer | A requested 600px/s projectile produced about 20/10/5px after 1s when fired at 30/60/120FPS. Use Arcade velocity units directly; disable and reset pooled bodies on recycle/reuse. | Executed supplied TypeScript against the documented Arcade API boundary; not a rendered Phaser/device benchmark. [Phaser 3.80.1 Body source](https://raw.githubusercontent.com/photonstorm/phaser/v3.80.1/src/physics/arcade/Body.js). |
+| api-designer, solution-architect | Six local Error references failed across the two OpenAPI examples. Move the existing Error Schema Objects into components.schemas, preserving their distinct envelopes. | Complete YAML reference resolution and schema payload checks; no API endpoint deployed. [OpenAPI 3.1 Components](https://spec.openapis.org/oas/v3.1.0#components-object). |
+| mcp-generator | All three generated tools evaluated shell substitution. Invoke the pinned local GitNexus JS entrypoint through Node with a validated argv vector; source and dist resolve the same generated package/workspace root. | Real SDK 1.30/GitNexus 1.6.12 stdio checks on Linux/Node 24.19; literal inputs and correct cwd, not search quality. Node support narrows to ^22.18.0 or >=24.11.0; Node 22/Windows remain untested. Existing generated servers are not automatically replaced. [Node child_process](https://nodejs.org/docs/latest-v24.x/api/child_process.html#child_processexecfilesyncfile-args-options). |
+| eval-engineer | Self-reported confidence and an empty citation previously earned 100/PASS. The exact-answer example now requires an independent answer/source-ID oracle and returns UNVERIFIED when it is missing. | Executed function with malformed, wrong-answer, blank/unknown-source and valid controls; not semantic factuality or citation-entailment evaluation. |
+| sre | Four daily availability budgets were incorrect. Correct 24h time-based budgets to 86.4s/432s/864s/72min and distinguish burn multiplier from remaining budget. | Arithmetic/specification correction; not validation of an operational alert configuration or request-based SLO. [Google SRE Workbook](https://sre.google/workbook/alerting-on-slos/). |
+| xlsx-engineer | The full workbook example crashed at tuple.column before saving. Enumerate column tuples and align the documented script name. | Complete example executed with openpyxl 3.1.5; workbook reopened with preserved data/formulas. Calculation-engine values and rendered layout remain unverified. [Worksheet.columns](https://openpyxl.readthedocs.io/en/stable/api/openpyxl.worksheet.worksheet.html#openpyxl.worksheet.worksheet.Worksheet.columns). |
+
+Fresh isolated agents also retrieve/apply the current and candidate references, with actual produced artifacts inspected separately. This narrow reference-usability check is not a repeated model benchmark or behavioral skill promotion. New behavioral guidance still requires actual [baseline/current/candidate evaluation](../evals/skills/README.md); a fixture PASS, source citation, test count or polished prose cannot substitute.
+
+A Godot 4.6.3 input-buffer candidate passed 19 method checks but remains **HOLD**: its new overflow backpressure can stall with the existing reconciliation consumer, which does not retire acknowledgments on one branch. No Godot source is changed. This method result does not establish a working multiplayer PredictionManager.
+
+## Specialist questions and proposed verifiers
+
+Read the full skill linked in each row; its sibling LITE.md is the compact overlay. Proposed verifiers are deliberately broader than the source corrections above. Agent behavior, target-engine/device behavior, accessibility experience, player fun, retention and business impact need their own relevant observations.
+
+
+### Game engines and runtime systems
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [3d-spatial-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/3d-spatial-engineer/SKILL.md)<br>NO CHANGE | 1. For this engine and shader convention, are points column or row vectors, what are up/forward axes and clip-depth range, and does the proposed import transform preserve the camera and collider locations?<br>2. When reparenting a rotated/scaled child during streaming or grab, is the new parent invertible, and which world-space transform components must remain unchanged? | For invertible parent matrices, preserve world position/orientation/scale within stated numeric tolerance; singular matrices must fail explicitly. Verify clip boundaries and player clearance in the target engine. |
+| [ai-behavior-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/ai-behavior-engineer/SKILL.md)<br>CANDIDATE | 1. Should a guard interrupt a running patrol when a target appears, or finish its current action; which BT composite reset/abort semantics does that choice require?<br>2. For the measured crowd size, do near/far AI tiers preserve perception memory and navigation progress when their clocks run at different rates? | No exception; designer-selected interrupt/abort rules hold; independent clocks meet required update counts and memory expiry; in-engine encounter fairness remains separately required. |
+| [animation-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/animation-engineer/SKILL.md)<br>UNVERIFIED | 1. During an interrupted attack or root-motion transition, which system owns displacement and hit authorization, and how are animation events prevented from applying duplicate gameplay effects?<br>2. For the selected rig and engine, are IK targets in world, local or component space, and does pose blending preserve foot contacts and joint constraints at the chosen animation LOD? | Use an approved 1m locomotion clip and interrupted attack: exactly one displacement source, no duplicate hit, continuous pose, ground-contact error within the project threshold, IK disabled only at approved LOD; dynamic reduced-motion preference change for web route. |
+| [game-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/game-engineer/SKILL.md)<br>REFERENCE FIX | 1. For an existing game, does engine routing follow the checked-in project and explicit user engine choice before generic mobile/fidelity defaults?<br>2. For each movement API, is speed a rate, acceleration, impulse or displacement, and who integrates the timestep and resets recycled physics bodies? | Firing rate must not change speed; existing pool cap and input/play flow survive; warm restart leaves one subscription and no free active body. |
+| [godot-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/godot-engineer/SKILL.md)<br>CANDIDATE | 1. Can the pause menu receive input and resume/restart while the SceneTree is paused, and do its callbacks remain top-level functions under the pinned Godot parser?<br>2. Does saving a 2D or 3D player serialize and restore the same typed position and scene, including malformed/truncated data and a failed write? | Valid parser plus menu pause/resume/restart while paused, no lost input, typed save round-trip and named-preset artifact boot. |
+| [godot-multiplayer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/godot-multiplayer/SKILL.md)<br>CANDIDATE | 1. Does each movement/health node retain server authority while only authenticated input nodes belong to clients, and are RPCs addressed to peer 1 and consumed once per server tick?<br>2. Do input sequence numbers stay monotonically increasing across buffer truncation and acknowledgments so reconciliation can identify and replay the right commands? | Pinned engine parser and exact API contracts pass; unique command IDs survive capacity/ack; then two-peer authoritative movement, late join, packet duplication, reconnect and clean despawn work. |
+| [mobile-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/mobile-engineer/SKILL.md)<br>CANDIDATE | 1. When an offline row is edited again before an earlier upload completes, can that old acknowledgment mark the newer revision synced and lose the pending edit?<br>2. Does the exact Expo/Zustand storage adapter implement getItem, setItem and removeItem, hydrate authentication safely, and recover from concurrent 401 refreshes and logout? | The pinned app compiles, storage round-trip/delete works, at most one refresh is in flight per session, old offline ack cannot clear newer work, and device navigation survives pause/resume. |
+| [phaser3-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/phaser3-engineer/SKILL.md)<br>CANDIDATE | 1. Can duplicate or foreign release create two simultaneous owners of one pooled sprite, and are free physics bodies disabled with a hard allocation ceiling?<br>2. After Scene stop/restart and HUD destroy, is exactly one global event listener active, and does the same damage oracle remain 130 for the documented inputs? | Duplicate/foreign release rejected, capacity honored, body reset correct; actual scene stop/restart has one effect per input and no global listener retention; exact documented arithmetic is 130. |
+| [physics-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/physics-engineer/SKILL.md)<br>CANDIDATE | 1. For each selected engine call, is the argument a force, acceleration, velocity, impulse or displacement, and does the engine or caller apply the simulation step?<br>2. Does the chosen 2D/3D CCD mode prevent the actual projectile/target tunneling pair at maximum relative speed without exceeding its measured physics budget? | Exact CCD property enabled for selected body; projectile wall hits at max relative speed; force/impulse tests integrate once at two simulation steps, with contact/solver tolerance stated. |
+| [roblox-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/roblox-engineer/SKILL.md)<br>CANDIDATE | 1. If ProcessReceipt receives the same PurchaseId on two servers or after a save failure, can the purchased reward be durably granted once and acknowledged only after persistence?<br>2. Does a single owned autosave coordinator bound in-flight ProfileService work, handle player release, and avoid launching a yielding save pass on every Heartbeat? | Duplicate receipt changes durable reward exactly once; failure returns NotProcessedYet; acknowledgment follows durable success; replay after restart/concurrent delivery preserves one grant. Scheduler respects approved rate and ownership. |
+| [threejs-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/threejs-engineer/SKILL.md)<br>NO CHANGE | 1. Who owns shared geometry/material/texture/PMREM/render-pass resources across reuse and async scene replacement, and can final cleanup be called twice without disposing borrowed users?<br>2. Do camera/animation rates, fixed-step gameplay, pause/restart and canvas resize remain consistent under 30/60/120Hz and browser back-forward cache restoration? | Retain seeded win/lose/pause/20 restarts and pool identity/lifetime oracles; add camera invariance only for camera changes, plus rendered resize/async replacement before claiming those paths. |
+| [unity-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unity-engineer/SKILL.md)<br>CANDIDATE | 1. Does the Input System example compile with non-conflicting event/callback names and a deliberate way to consume or inject one-frame jump input?<br>2. Does inventory removal conserve item counts across stacks, reject invalid amounts and follow the approved all-or-partial removal policy without silently losing or creating items? | Sample assemblies compile; one-frame input consumed once; inventory quantity decreases by exactly the approved amount with no effect on other items; 20 scene cycles preserve events/timeScale. |
+| [unity-mcp](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unity-mcp/SKILL.md)<br>UNVERIFIED | 1. Which exact Unity-MCP provider/version and callable tool schemas are live, and can a read-only discovery query prove project path, active scene and component properties before mutation?<br>2. After prefab creation and scene object destruction, do later material/network operations address the prefab asset or a live instance, and can save/reopen prove references and undo scope? | Discover exact provider tool schemas, prove initialize/call on active project, execute reversible temporary-scene recipe, save/reopen/undo, verify no duplicate editor/server process. |
+| [unity-multiplayer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unity-multiplayer/SKILL.md)<br>CANDIDATE | 1. Are inputs assigned monotonic simulation ticks and processed once per fixed server step, or does rendering/packet arrival rate control authoritative displacement?<br>2. Can a non-owner call health/heal or attack RPCs on another player, and are sender identity, equipped action, cooldown, range and finite payloads validated before state mutation? | Compile with project-pinned Unity/NGO/UTP/services, then headless server plus two clients verify equal fixed-tick distance, exact ack replay, unauthorized rejection, late join and despawn cleanup. |
+| [unreal-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unreal-engineer/SKILL.md)<br>CANDIDATE | 1. What exact UE version, plugin/modules and input stack does the existing project use, and are compile examples genuine UHT/UBT contracts rather than mixed-version sketches?<br>2. Who owns ASC initialization, ability grants and stamina/speed timers through possession, cancellation, death and restart, and can every begun effect be released once? | Pinned UE module UHT/UBT passes; one configured ability grant per possession, no timer/effect after cancellation/death, pool no live free actors; actual project play path preserved. |
+| [unreal-multiplayer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unreal-multiplayer/SKILL.md)<br>CANDIDATE | 1. Does custom saved-move compression preserve base jump/crouch flags while adding a legal custom dash flag, and does server replay simulate the same moves under latency?<br>2. Does hitscan compensation actually query historical target poses and restore the scene after tracing, rather than only reading a transform that is never used? | Pinned UE5.4-or-actual headers compile; base movement flags survive dash; historical-hit fixture distinguishes current/historical poses, rejects stale timestamps and restores collision transforms exactly. |
+| [xr-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/xr-engineer/SKILL.md)<br>CANDIDATE | 1. At grab, release, controller disconnect and XR session end, does the object retain the intended world transform and do all per-session listeners/render loops/owned resources terminate once?<br>2. Do hand tracking capability negotiation and pose sampling follow XRInputSource.hand and session features, with a usable controller fallback when tracking is absent or lost? | Two finite ray vertices; controller-relative grab/release world-pose preservation; no duplicate XR session/loop; standard hand negotiation with fallback; hardware comfort/frametime required separately. |
+
+### Visual direction and player experience
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [accessibility-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/accessibility-engineer/SKILL.md)<br>CANDIDATE | 1. After filtering the editable combobox, does ArrowDown identify a visible option while popup visibility and aria-expanded agree, including no-results and Escape/reopen?<br>2. Does the WCAG 2.2 reference distinguish AA dragging alternatives from AAA focus appearance, and can a copied modal actually contain and restore focus? | Repair exact-script state fixture, then separately validate browser/AT behavior. |
+| [art-director](https://github.com/buiphucminhtam/forgewright/blob/main/skills/art-director/SKILL.md)<br>NO CHANGE | 1. Can the selected concept survive thumbnail, gameplay, family-wall and stress-state review without changing its locked shape/value/color mechanisms?<br>2. When a family needs controlled variation, do the gates distinguish a repeatable production rule from a polished hero exception and return concept-level failure upstream? | Keep the style-frame/family production gate and art-owner boundary. Assess held-out family/reference cases with independent review; no self-score. |
+| [concept-artist](https://github.com/buiphucminhtam/forgewright/blob/main/skills/concept-artist/SKILL.md)<br>NO CHANGE | 1. Do the three proposed directions differ in silhouette, spatial premise or material logic when palette and ornament are removed?<br>2. Does the selected concept packet show construction/camera/scale risks and preserve the exact evidence binding before Art Director locks production Style DNA? | Compare against a blinded fixed brief, approved references and real-scale mockups; concept distinctiveness and usability remain separate judgments. |
+| [game-accessibility-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/game-accessibility-engineer/SKILL.md)<br>CANDIDATE | 1. Can the separate master/SFX controls update and persist the actual nested channel setting without mutating unrelated audio preferences?<br>2. When dialogue and a critical offscreen sound overlap, does the caption policy preserve the gameplay information and apply chosen subtitle size/background without losing it on restart? | Repair nested channel state and then test the actual audio route. |
+| [game-asset-vfx](https://github.com/buiphucminhtam/forgewright/blob/main/skills/game-asset-vfx/SKILL.md)<br>NO CHANGE | 1. If an effect is canceled, pooled and immediately reused, can an old callback release or mutate the new play instance or award another win reward?<br>2. At peak simultaneous effects, do essential targets/results remain readable with reduced motion/no flash, and is transparent coverage measured on the target phone? | Use same seeded event workload and actual camera/device before/after; retain gameplay/reward invariants. |
+| [game-audio-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/game-audio-engineer/SKILL.md)<br>CANDIDATE | 1. Is the Intensity parameter set on the same valid FMOD instance that starts the footstep, with release ownership and retry/teardown accounted for?<br>2. Do footsteps occur on committed gait/contact events rather than every Update frame, and do user mute/mix preferences preserve essential alternative cues? | Fix exact parameterized-instance ownership; compile and listen in the installed engine before audio-quality claims. |
+| [game-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/game-designer/SKILL.md)<br>CANDIDATE | 1. Do the sample progression numbers actually follow their stated XP formula, while stock/flow and available sinks match the intended player session?<br>2. Does a feedback proposal preserve the current art/accessibility handoff and test a real decision-loop hypothesis instead of treating more VFX or numerical inflation as fun? | Recalculate the small worked table with a single explicit rounding convention. |
+| [interaction-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/interaction-designer/SKILL.md)<br>CANDIDATE | 1. Does a simple synchronous control receive only states it can reach, while an asynchronous widget gets explicit interruption/error recovery?<br>2. Can keyboard, touch and pointer users reach the same action with grounded motion timing and a usable reduced-motion path? | Remove contradictory universal count, then compare matched before/after model outputs against actual component state graphs. |
+| [level-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/level-designer/SKILL.md)<br>CANDIDATE | 1. Can the preflight reject invalid X and Y spawn positions and entity extents, then separately establish reachable routes using the verified movement metrics?<br>2. Do wayfinding, enemy introduction and tension/release hypotheses survive representative players rather than being inferred from the blockout's JSON validity? | Both axes and finite coordinates are checked; actual route/playtest remains unverified. |
+| [liveops-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/liveops-engineer/SKILL.md)<br>CANDIDATE | 1. Does weighted variant assignment cover the complete unsigned hash domain, stay deterministic and respect declared weights before experimental results are interpreted?<br>2. Can the exact migration command execute on a disposable PostgreSQL database, fail loudly and recover without treating a concurrent index build as an ordinary transactional migration? | Correct the allocation fragment and verify against the same fixture; migration runtime remains separately required. |
+| [narrative-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/narrative-designer/SKILL.md)<br>UNVERIFIED | 1. Can the illustrative Ink graph resolve every divert/function/variable declaration without hiding an unintended quest softlock behind syntax-only validation?<br>2. Does each choice communicate its intended expressive or mechanical consequence while preserving character voice and localization identity across branch reconvergence? | Resolve target/declaration completeness using actual compiler and branch fixtures; no writing-quality or agency claim from parse success. |
+| [technical-artist](https://github.com/buiphucminhtam/forgewright/blob/main/skills/technical-artist/SKILL.md)<br>CANDIDATE | 1. Does the texture pipeline distinguish WebGL1 limitations, WebGL2 support, engine import/compression constraints and actual asset memory instead of resizing every NPOT image?<br>2. Are LOD/material/VFX choices justified by measured target bottlenecks while preserving the art director's silhouettes, palette roles and motion contract? | Version-scope NPOT advice; do not claim rendering/performance improvement without actual target evidence. |
+| [ui-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/ui-designer/SKILL.md)<br>CANDIDATE | 1. Do HUD hierarchy, semantic tokens and safe areas protect the primary gameplay/task across actual content, localization and 200% text scaling?<br>2. Does the final interaction checklist honor reachable states and the approved motion profile instead of reinstating mandatory stagger/timing or unsupported grip percentages? | Ground checklist in actual profile/state matrix and preserve actual-scale accessibility requirements. |
+| [unity-shader-artist](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unity-shader-artist/SKILL.md)<br>CANDIDATE | 1. Are all material properties placed in UnityPerMaterial for SRP Batcher compatibility while GPU instancing uses its separate actual macros/buffer contract?<br>2. Do the chosen render-pass and precision APIs match the installed URP/HDRP version, with actual Game/Scene/device renders before performance claims? | Correct the buffer/optimization explanation, then compile/profile the actual target separately. |
+| [unreal-technical-artist](https://github.com/buiphucminhtam/forgewright/blob/main/skills/unreal-technical-artist/SKILL.md)<br>CANDIDATE | 1. Does foliage wind use Unreal world-space Z-up consistently, keeping horizontal sway in XY when vertical displacement is forbidden?<br>2. Are Niagara CPU/GPU and Nanite/material decisions version- and workload-specific while retaining approved silhouettes, culling bounds and gameplay readability? | Repair world-space convention and exercise canonical axes before actual engine rendering. |
+| [ux-researcher](https://github.com/buiphucminhtam/forgewright/blob/main/skills/ux-researcher/SKILL.md)<br>UNVERIFIED | 1. Can another researcher trace each recommendation to a task observation, separate attitude/inference, and recover the segment/sample/assistance conditions?<br>2. Are SUS total/subscale formulas, interpretation and uncertainty supported by the actual instrument literature rather than convenient generic thresholds? | Keep evidence traceability; resolve subscale methodology from a verified original source before numerical reporting. |
+| [vision-review](https://github.com/buiphucminhtam/forgewright/blob/main/skills/vision-review/SKILL.md)<br>NO CHANGE | 1. Can the reviewer separate a measurable artifact/reference violation from subjective preference and keep a high telemetry score from overriding a material defect?<br>2. Does motion or gameplay-readability approval require actual time/scale/state evidence rather than a hero screenshot or reference familiarity? | Use held-out approved/adversarial render cases and independent finding-level adjudication, not reviewer self-scores. |
+
+### Software and public contracts
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [api-designer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/api-designer/SKILL.md)<br>REFERENCE FIX | 1. Does the complete OpenAPI 3.1 example put schema definitions in the correct component namespace and resolve every error-response reference?<br>2. What sort/tie-breaker, cursor scope, and concurrent-insert semantics must a consumer freeze before claiming cursor pagination avoids gaps or duplicates? | All 16 api-designer local references and all 10 architect local references resolve. Every reusable response has Response Object structure. A valid error payload validates and an invalid payload type rejects. |
+| [code-reviewer-go](https://github.com/buiphucminhtam/forgewright/blob/main/skills/code-reviewer-go/SKILL.md)<br>UNVERIFIED | 1. Does a closure-capture warning distinguish pre-Go-1.22 modules, Go-1.22 short-declared loop variables, and preexisting variables reused with assignment?<br>2. Does the reviewer distinguish legal nil-slice append, slice length, backing-array capacity, and actual concurrent map mutation before proposing rewrites? | Accept a Go-1.22 := capture fixture and reject a reused-variable capture fixture under the intended concurrency contract. Assert len=0 and cap=1000 for make([]T,0,1000); append to nil is valid. |
+| [code-reviewer-python](https://github.com/buiphucminhtam/forgewright/blob/main/skills/code-reviewer-python/SKILL.md)<br>CANDIDATE | 1. Will every example marked correct actually compile, particularly when a type-hint example includes await?<br>2. Does a recommended comprehension optimization preserve sequence order, multiplicity, valid unhashable inputs, and predicate side-effect count? | Positive type-hint fence compiles. Input [3,1,3] yields [3,1,3] for identity calculation and true predicate. List-valued elements remain accepted. |
+| [code-reviewer-rust](https://github.com/buiphucminhtam/forgewright/blob/main/skills/code-reviewer-rust/SKILL.md)<br>UNVERIFIED | 1. Can the reviewer accept valid single-input lifetime elision and still reject genuinely ambiguous returned borrows?<br>2. Are arithmetic property-test domains compatible with fixed-width overflow semantics and the selected debug/release profile? | Single-input first_word compiles. An omitted output lifetime with two independent input borrows fails for the expected reason. Overflow boundaries have explicit checked/wrapping/domain-limited semantics. |
+| [frontend-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/frontend-engineer/SKILL.md)<br>CANDIDATE | 1. Does the declared HTTP client SDK actually export the named factory/methods and invoke the chosen refresh middleware for HTTP 401?<br>2. Do input component IDs, hook order, async state ownership, and retry behavior remain valid when props change or responses arrive out of order? | Published client factory/hook use the same real SDK API. A 401 response triggers exactly one authorized refresh/retry; failed refresh terminates deterministically. A normal 200 response returns expected data; network errors remain distinct. |
+| [fullstack-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/fullstack-engineer/SKILL.md)<br>NO CHANGE | 1. Where is the end-to-end contract binding a tenant-authenticated mutation, persisted result, client cache invalidation, and user-visible success or failure?<br>2. For the sample client fetch path, what prevents stale responses, silent HTTP errors, or a retry from duplicating the server-side effect? | A UI mutation persists once and the subsequent read shows the same record. Tenant mismatch rejects at the server boundary. HTTP failure and stale/cancelled responses leave deterministic UI state. |
+| [mcp-generator](https://github.com/buiphucminhtam/forgewright/blob/main/skills/mcp-generator/SKILL.md)<br>REFERENCE FIX | 1. Can any tool argument become shell syntax rather than literal argv, and is runtime argument validation independent of tools/list JSON Schema?<br>2. Do advertised tools/resources/prompts, SDK import paths, stdio output discipline, and workspace selection match the actual generated executable? | Query/context/impact receive the exact payload as one argv element or reject it without process execution. Spaces, quotes, shell substitutions, semicolons, and backticks never create side effects. Missing, nonobject, wrong-type, and oversized arguments reject before process launch. Normal queries still execute exactly the intended fixed subcommand. |
+| [software-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/software-engineer/SKILL.md)<br>CANDIDATE | 1. Do handler, service Result&lt;T,E&gt;, and authenticated tenant contracts agree on arguments, success values, and expected-error mapping?<br>2. Does the idempotency example atomically reserve a key before the domain effect, including concurrent requests and key scope/payload mismatch? | Concurrent identical key/payload/caller requests produce one effect. Distinct callers and operations cannot replay each other. Same key with changed payload has an explicit mismatch result. Handler maps Result and tenant context consistently. |
+| [software-engineer-go](https://github.com/buiphucminhtam/forgewright/blob/main/skills/software-engineer-go/SKILL.md)<br>UNVERIFIED | 1. Does the first database example respect database/sql QueryRowContext returning *Row and deferring errors until Scan?<br>2. Are custom error types and sentinel errors kept distinct so errors.Is, missing-row handling, and repository tests agree? | The extracted positive database example compiles against database/sql. ErrNoRows maps to the chosen stable domain error. The non-not-found driver failure remains wrapped and discoverable. |
+| [software-engineer-python](https://github.com/buiphucminhtam/forgewright/blob/main/skills/software-engineer-python/SKILL.md)<br>UNVERIFIED | 1. Does the documented Python floor match executable syntax, tooling target versions, and pattern-matching examples?<br>2. Does the chosen async database library expose the pool acquisition/fetch method used by the example, and are row/entity/null semantics explicit? | Every positive snippet parses/runs at the declared minimum version. Optional fields use valid None handling. The locked selected driver accepts the exact pool query call and row mapping. |
+| [software-engineer-rust](https://github.com/buiphucminhtam/forgewright/blob/main/skills/software-engineer-rust/SKILL.md)<br>UNVERIFIED | 1. Do the supplied dispatcher and validation tests parse under the advertised Rust edition before concurrency claims are assessed?<br>2. Do lock guards, spawn_blocking join failures, typed domain errors, and minimum-supported-Rust declarations preserve the same public Result contract? | Every positive snippet parses for its edition/MSRV. Dispatcher stores one payload on success. Lock poison and task join errors become the documented Result error. |
+| [solution-architect](https://github.com/buiphucminhtam/forgewright/blob/main/skills/solution-architect/SKILL.md)<br>REFERENCE FIX | 1. Does the first contract artifact produced by the architect validate before engineering depends on it?<br>2. Do scale/team/budget heuristics remain constraint hypotheses, with data ownership and migration consistency chosen from actual workload evidence? | Every local reference resolves. Reusable responses satisfy Response Object structure. The existing API/error field contract remains unchanged. |
+| [web-scraper](https://github.com/buiphucminhtam/forgewright/blob/main/skills/web-scraper/SKILL.md)<br>CANDIDATE | 1. Does URL validation reject equivalent nonpublic destinations, including IPv4-mapped IPv6, and does enforcement persist across redirects and the actual socket connection?<br>2. Does the supported crawl4ai version accept the advertised deep-crawl filter API, and are extracted text fields still treated as untrusted model input? | Public direct address accepts. Direct and mapped IPv4 loopback/link-local addresses reject. Malformed and prohibited schemes reject. A version-bound crawl fixture proves redirect/discovered-link transport policy before any end-to-end SSRF claim. |
+| [xlsx-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/xlsx-engineer/SKILL.md)<br>REFERENCE FIX | 1. Can the complete spreadsheet example create/reopen its promised workbook without invalid worksheet iterator or range-style API calls?<br>2. Does recalculation success prove that the engine completed and formula caches are present/current, including timeout and stale/empty-cache cases? | Full LITE example saves a workbook that reopens with expected sheets/data/formula cells. An injected no-save timeout cannot produce success. A typed formula error is detected. A live known-value workbook recalculates before claiming numerical correctness. |
+
+### Quality, security and operations
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [auto-publish](https://github.com/buiphucminhtam/forgewright/blob/main/skills/auto-publish/SKILL.md)<br>CANDIDATE | 1. An Expo project already has EAS credentials and can use a remote macOS builder. Must its first iOS build use --local on the agent host, or can initial interactive configuration precede remote non-interactive builds?<br>2. A build was uploaded using --auto-submit. What evidence distinguishes build success, store receipt, processing, and actual release, and what action did the owner authorize? | Remote build remains feasible without --local. Missing credentials are reported by name only; external builds/submissions require current scope and budget. Receipt, processing, release and unrun native signing checks remain separate. |
+| [autonomous-testing](https://github.com/buiphucminhtam/forgewright/blob/main/skills/autonomous-testing/SKILL.md)<br>CANDIDATE | 1. A runner returns passed:false with an empty bugs list, or its post-fix recheck still fails. Must the build hook reject even if diagnostics cannot classify a bug?<br>2. Can the documented username property test detect a regression in the application validator, and which length boundaries and surviving mutations prove that? | Failure outcomes cannot resolve as successful. The PBT test fails on a real SUT mutation instead of retesting a local copy. No assertions, expected values, snapshots, cases or skips are weakened. |
+| [build-release-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/build-release-engineer/SKILL.md)<br>CANDIDATE | 1. One texture conversion fails but other conversions complete. What exit status and artifact checks must prevent packaging an incomplete release?<br>2. Does the Unity batch entrypoint actually call UnityEditor.BuildPipeline.BuildPlayer, take CLI parameters correctly, and verify a fresh target-specific artifact? | No required asset conversion failure yields exit 0. Successful packaging uses artifact hashes and expected files from the current source/toolchain. Unity/native-platform claims remain UNVERIFIED until their actual toolchain executes. |
+| [code-quality-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/code-quality-engineer/SKILL.md)<br>NO CHANGE | 1. When lint, complexity and coverage are green, what evidence justifies a Production Ready Grade A score of 90..100 rather than an uncalibrated numeric claim?<br>2. A proposed fix reduces lint warnings but changes a requirement-linked expected value. Should the quality specialist change the oracle, the implementation, or the requirement? | Findings arise from behavior/contract evidence, not score thresholds. No oracle edits or new skips are used to make a fix pass. |
+| [code-reviewer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/code-reviewer/SKILL.md)<br>NO CHANGE | 1. An N+1 pattern appears in a loop, but the dataset is bounded and cached. What facts determine whether it is a release-blocking finding?<br>2. The implementation fails a documented acceptance criterion but contains unrelated style issues. What should the review deliver and what source modifications are authorized? | Each formal finding cites a reachable path and requirement/impact. No extra findings are inferred solely from a keyword or line-count threshold. No product source changes are made by the reviewer. |
+| [debugger](https://github.com/buiphucminhtam/forgewright/blob/main/skills/debugger/SKILL.md)<br>CANDIDATE | 1. A database connection fails. How can the agent establish which configuration binding is present without exposing passwords, keys or connection strings in terminal output?<br>2. Can the documented async counter++ function race under one JavaScript event loop without any await inside its read-modify-write sequence? | No secret sentinel reaches logs/artifacts. Diagnosis still identifies missing bindings and preserves proxy/TLS/runtime authentication routes. Behavioral fixes retain the same regression oracle. |
+| [devops](https://github.com/buiphucminhtam/forgewright/blob/main/skills/devops/SKILL.md)<br>NO CHANGE | 1. A requested hosted adapter is green while the canonical local security gate fails. Which result controls release and how should the adapter be implemented?<br>2. A temporary test stack already exists and another user owns its containers. What may the agent reuse, stop, change or retain while proving deployment readiness? | Inner gate failure yields the same failing status in both entrypoints. Only owned resources are cleaned; functional checks prove the selected service path. No infrastructure apply or deployment occurs without current task authority. |
+| [mobile-tester](https://github.com/buiphucminhtam/forgewright/blob/main/skills/mobile-tester/SKILL.md)<br>CANDIDATE | 1. A Midscene assertion rejects. Does the documented standalone smoke-test invocation fail the calling release gate, or merely print an error?<br>2. Several devices are attached and a vision API key is configured. How should the test select its target and establish credential readiness without leaking the key or modifying an unowned device? | No credential value is exposed. Assertion failure propagates nonzero without skipping cleanup. Native claims remain unverified until the target device/app flow runs. |
+| [performance-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/performance-engineer/SKILL.md)<br>CANDIDATE | 1. k6 never ran, returned a failure, or produced no current metrics artifact. What metrics and PASS status may the report contain?<br>2. How do the load script and Lighthouse gate enforce the intended authenticated flow and numeric latency/CLS budgets rather than just display checks? | Reports cannot manufacture measurements or PASS. Authenticated flow executes; correctness checks affect exit status. Latency and CLS budgets bind numeric metric values, not unrelated scores. |
+| [qa-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/qa-engineer/SKILL.md)<br>UNVERIFIED | 1. Does timing 100 sprite allocations plus one scene.update(16) call establish rendered 60fps performance?<br>2. Would always returning false from detectMobile fail the documented mobile-detection test, and how are pending test stubs separated from completed coverage? | The rendering verifier fails a deliberately slow renderer. Both constant-return detection mutations fail. Pending/todo/skipped/unrun cases remain distinct; no test oracle is weakened. |
+| [security-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/security-engineer/SKILL.md)<br>UNVERIFIED | 1. An allowlisted partner URL redirects to a private address. Does checking only the initial hostname and then default fetch establish SSRF protection?<br>2. A scanner reports an unreachable Critical dependency issue and a reachable object-authorization bypass. Can a grade alone determine merge safety or a fixed 80% detection claim? | A concrete redirect bypass must be reproduced before elevating this to a formal vulnerability finding. Authorized allowed traffic still works after any proposed guard. No uncalibrated detector percentage is presented as measured assurance. |
+| [sre](https://github.com/buiphucminhtam/forgewright/blob/main/skills/sre/SKILL.md)<br>REFERENCE FIX | 1. For time-based availability over 24 hours, what downtime budget corresponds to 99.9%, 99.5%, 99% and 95%, and can those values be used directly for request-count SLIs?<br>2. What fraction of a 30-day error budget do 14.4x burn for one hour and 6x burn for six hours consume, and what changes when the SLO window is 28 days? | Budgets and burn descriptions match independent arithmetic and Google SRE definitions. The distributed examples use one explicit window and event/time basis. Policy conditions clearly refer to spent or remaining budget consistently. |
+
+### AI, data and orchestration
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [ai-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/ai-engineer/SKILL.md)<br>CANDIDATE | 1. Do document chunks honor the actual tokenizer/context bound while retaining short documents, source offsets and access-control metadata, and does retrieval beat the no-retrieval baseline on the same labeled questions?<br>2. Does the serving/provider contract preserve tool-call IDs, finish reasons, usage and streaming errors, and do timeout/fallback and judge calibration tests measure the current approved model rather than remembered vendor defaults? | Exact example compiles; chunk sizes/coverage/source spans meet the declared contract. |
+| [data-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/data-engineer/SKILL.md)<br>CANDIDATE | 1. What is the declared grain and idempotency key for every raw/intermediate/mart table, and do replay, duplicate timestamp, late-arriving update and restart fixtures preserve exactly one correct row per entity?<br>2. For the observed engine/version and migration runner, which DDL operations must be transactional and which must be separate, and how are online index validity, failure cleanup and retry semantics verified? | No concurrent index operation in a transaction block; all documented CLI flags exist; disposable DB execution eventually required for a success claim. |
+| [data-scientist](https://github.com/buiphucminhtam/forgewright/blob/main/skills/data-scientist/SKILL.md)<br>CANDIDATE | 1. Does the split match the prediction-time contract (temporal, grouped or stratified), with preprocessing fitted only on training data and the final holdout protected from feature/model/prompt selection?<br>2. Are experiment assignment, unit of analysis, power in both arms, variance assumptions, multiple testing and guardrail stopping rules defined before observing results, with effect sizes and uncertainty rather than an arbitrary Grade A cutoff? | Supplied smoke body compiles, an actual dataset split/training check executes when dependencies exist, and phase targets resolve. |
+| [database-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/database-engineer/SKILL.md)<br>CANDIDATE | 1. Do the current query patterns, cardinalities and EXPLAIN/ANALYZE evidence justify each index and its column order, including write overhead, tenant filters and foreign-key operations?<br>2. Does the actual migration runner support the chosen online DDL semantics, bounded lock/statement timeouts, invalid-index detection, backfill resumability and reversible expand/contract deployment order? | Separate concurrent DDL; all commands verified against installed help; ordinary disposable table migration succeeds and invalid states are detected. |
+| [eval-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/eval-engineer/SKILL.md)<br>REFERENCE FIX | 1. Is pass@k estimated per task from n repeated attempts (n &gt;= k), then aggregated with the task distribution and uncertainty stated, instead of exponentiating a pooled across-task pass rate?<br>2. What independent answer/source oracle and observed execution evidence permit PASS, and do malformed JSON, missing answers, empty/unapproved citations, refusal and provider failure receive distinct non-pass outcomes? | Selected reference scorer rejects invalid fixtures, requires an independent oracle, returns UNVERIFIED without one, and passes only matching answer/source. Statistical formula is a separate held repair. |
+| [llm-tester](https://github.com/buiphucminhtam/forgewright/blob/main/skills/llm-tester/SKILL.md)<br>UNVERIFIED | 1. Does the config validate against the exact installed promptfoo version, with schema checks, timeouts/cost limits and cache policy tied to the property being measured, and do runner failures/skips remain distinct from output passes?<br>2. Are red-team cases aimed at authorized real entrypoints with frozen threat-specific oracles and judge calibration, including clean negatives, rather than generic keyword refusals or a schema-only mock? | Exact config validates with the installed schema; negative fixtures fail; output-quality claims require actual model completions. |
+| [notebooklm-researcher](https://github.com/buiphucminhtam/forgewright/blob/main/skills/notebooklm-researcher/SKILL.md)<br>UNVERIFIED | 1. Which currently installed/authenticated adapter and exact command schema are available, and what sources may be uploaded under the existing data boundary without treating source text or a model summary as action authority?<br>2. Are notebook, research task and artifact IDs bound to each request, with bounded polling, explicit terminal failure states and verification of original source citations before synthesis is reused? | Verified command availability and bounded artifact-ID polling with failed/missing/timeout cases; every material conclusion cites original sources. |
+| [parallel-dispatch](https://github.com/buiphucminhtam/forgewright/blob/main/skills/parallel-dispatch/SKILL.md)<br>CANDIDATE | 1. What concurrency, scope isolation and provider permissions are actually enforced by this runtime, and can the plan avoid claiming token caps, writable worktrees or merge capabilities the current adapter does not provide?<br>2. Can cancellation, deadlines, duplicate findings and failed workers stop cleanly while independent review receives only immutable requirements/diff/raw evidence, with no invented worker events or unavailable native-tool execution? | Entries/callers match actual read-only mode/max3/ignored legacy fields; no claim of isolation or live execution without evidence. |
+| [polymath](https://github.com/buiphucminhtam/forgewright/blob/main/skills/polymath/SKILL.md)<br>NO CHANGE | 1. Which credible alternative hypotheses could change the decision, and what primary evidence or disconfirming observation would distinguish them after accounting for version, population and selection bias?<br>2. Does every material conclusion preserve claim-to-original-source traceability, with confidence based on authority/method/applicability rather than source count and a stop rule once more research cannot change the recommendation? | Material claims trace to originals; normative authority outranks derivative count; uncertainty and decision-change conditions explicit. |
+| [production-grade](https://github.com/buiphucminhtam/forgewright/blob/main/skills/production-grade/SKILL.md)<br>CANDIDATE | 1. Can a concrete request reach the smallest required specialist set with an authoritative PIPELINE_CONTEXT and actual capability checks, without reopening solved requirements or forcing BA/research/memory rituals?<br>2. Do all phase/middleware entries obey the same routing, retry and evidence contracts, preserve cross-domain authority, and prevent a score/marker from overriding failed acceptance or unsupported runtime capabilities? | Canonical ownership and actual runtime boundaries preserved in every entry; clear specs incur no mandatory interview; unresolved material acceptance decisions remain explicit. |
+| [prompt-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/prompt-engineer/SKILL.md)<br>CANDIDATE | 1. Which prompt/model/version variant beats the frozen held-out task oracle while retaining task-specific constraints, and are structured-output failures, unsupported provider fields and retrieved instruction injections tested independently?<br>2. Is experiment assignment stable across processes and releases, with split units, exposure records and unchanged randomization unit defined so observed prompt effects are not assignment churn? | Stable assignment across independent processes plus explicit experiment/unit/split contract. |
+| [prompt-optimizer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/prompt-optimizer/SKILL.md)<br>CANDIDATE | 1. Can the fitness function distinguish a task-correct output from a padded keyword plan or high self-reported confidence, including adversarial wrong answers and task-specific negative constraints?<br>2. Are training, selection validation and final holdout separate, with the exact candidate bytes and current provider capabilities bound to evaluation before a project-local candidate is promoted? | Task-specific metric rejects adversarial controls, candidate remains staged, and actual improvement is confirmed on untouched holdout before promotion. |
+
+### Product, delivery and framework methods
+
+| Skill / disposition | Specialist research questions | Proposed domain verifier |
+| --- | --- | --- |
+| [business-analyst](https://github.com/buiphucminhtam/forgewright/blob/main/skills/business-analyst/SKILL.md)<br>UNVERIFIED | 1. Which missing facts change a business rule or acceptance, and which are delegated, reversible choices that BA should resolve?<br>2. Can the BA handoff preserve provenance and unresolved stakeholder conflict without fabricating completeness or taking PM specification authority? | Requirements retain source, business rule and acceptance; no invented facts; no unnecessary confirmation for fully specified/delegated reversible work; unresolved material conflict stays explicit. |
+| [conversion-optimizer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/conversion-optimizer/SKILL.md)<br>CANDIDATE | 1. Does checkout instrumentation measure a real completed payment while respecting the analytics provider property and privacy contract?<br>2. What inferential design makes a funnel winner credible instead of shipping a noisy point estimate or stopping when a p-value first crosses a threshold? | No identifying email payload and scalar-only properties; event truth follows authoritative transaction state; experiment conclusion follows its chosen valid stopping and uncertainty rule. Deterministic instrumentation correctness is distinct from commercial conversion uplift. |
+| [goal-driven](https://github.com/buiphucminhtam/forgewright/blob/main/skills/goal-driven/SKILL.md)<br>UNVERIFIED | 1. Can an autonomous goal claim progress after the actual verifier fails, and can a green-suite goal authorize changing its oracle?<br>2. Does continuation use the host goal capability honestly without sentinel budgets or imaginary cross-turn control? | Completion requires the selected goal acceptance and actual verifier exit, with goal state still active/blocked after failure; no oracle weakening and no unsupported goal bridge. |
+| [growth-marketer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/growth-marketer/SKILL.md)<br>UNVERIFIED | 1. Do acquisition allocation inputs describe incremental contribution and uncertainty, or is an unconditional observed ROAS being treated as a conditional bet payoff?<br>2. Are launch and discoverability recommendations current, substantiated and specific to the customer/channel rather than example claims? | Budget advice has correctly conditioned economics and labeled uncertainty; no fabricated incremental lift, pricing, testimonials or current field metrics. Marketing output alone does not prove acquisition improvement. |
+| [instinct-system](https://github.com/buiphucminhtam/forgewright/blob/main/skills/instinct-system/SKILL.md)<br>CANDIDATE | 1. Does observation require explicit opt-in and distinguish a successful tool invocation from satisfied task acceptance?<br>2. Can frequent trajectories or a self-assigned confidence/PES become production learning authority? | Both overlays preserve explicit opt-in and project isolation, report actual host/evidence state, avoid PII retention and treat confidence as heuristic; no tool-success-to-task-success or automatic promotion leap. |
+| [memory-manager](https://github.com/buiphucminhtam/forgewright/blob/main/skills/memory-manager/SKILL.md)<br>UNVERIFIED | 1. Who decides whether project memory is necessary, and is an explicit disabled/private workflow respected end to end?<br>2. Does recovery retrieve bounded, attributable context using a real supported trace command rather than treating stale memory as project truth? | No memory operation without a material need/authorization consistent with the resolved contract; source provenance and current-workspace recheck; supported bounded retrieval and sanitized export. |
+| [product-manager](https://github.com/buiphucminhtam/forgewright/blob/main/skills/product-manager/SKILL.md)<br>NO CHANGE | 1. Does the PM preserve the customer job, differentiated segments and product rules when prioritization inputs are absent?<br>2. Can the product requirement distinguish shipped correctness from an empirical value hypothesis and identify what evidence would change the launch decision? | Every must-have maps to customer job/segment/business rule and observable acceptance; unavailable economic or prioritization inputs remain unknown; empirical hypotheses have an appropriate decision owner and uncertainty. |
+| [project-manager](https://github.com/buiphucminhtam/forgewright/blob/main/skills/project-manager/SKILL.md)<br>UNVERIFIED | 1. Does delivery status follow supplied completed/remaining work and uncertainty rather than optimistic or mistaken labels?<br>2. Can a project coordinator adjust delivery commitments without overriding developer estimation, the Sprint Goal or a security acceptance requirement? | Status totals and direction reconcile to source snapshot; forecast assumptions/capacity are visible; owners decide material scope changes; no point-to-hour or cross-team velocity claim without evidence. |
+| [skill-maker](https://github.com/buiphucminhtam/forgewright/blob/main/skills/skill-maker/SKILL.md)<br>CANDIDATE | 1. What observed outcome proves an upgrade improves behavior before it is registered, and can a mental walk-through or stylistic score promote it?<br>2. Does the supplied minimal skill scaffold satisfy the actual metadata contract and retain the specialist authority/verifier needed by consumers? | Metadata parser and actual host loader accept the candidate; staged skills remain inactive until exact-byte observed eval meets current local promotion criteria; no mental/regex/length score is accepted as behavioral gain. |
+| [strategic-compaction](https://github.com/buiphucminhtam/forgewright/blob/main/skills/strategic-compaction/SKILL.md)<br>UNVERIFIED | 1. Does a compaction decision use an independently predicted breakpoint and preserve the active objective, constraints and verification state?<br>2. Can the shipped eval fail when the detector is wrong, without giving it the expected label or silently replacing the corpus? | Predictor never receives expected labels; corpus changes affect execution; deliberate wrong predictions fail; a resumed task preserves acceptance and unresolved state. Host overflow prevention and savings require actual measurements. |
+| [technical-writer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/technical-writer/SKILL.md)<br>NO CHANGE | 1. Can an authorized documentation change preserve one canonical truth without triggering a template-driven sitemap or portal expansion?<br>2. Does documentation verification prove that a reader can use the actual commands/API contract, or merely that a page builds and a quickstart seems plausible? | Every changed fact maps to current implementation/spec evidence; canonical uniqueness and links hold; runnable examples execute; unknown credentials/platform/timing are explicit; no unrequested site or durable inventory. |
+| [token-tracker](https://github.com/buiphucminhtam/forgewright/blob/main/skills/token-tracker/SKILL.md)<br>UNVERIFIED | 1. Can cost reporting distinguish provider-observed usage, missing usage, cached tokens, estimated prices and subscription billing without reporting unknown as zero?<br>2. Does a report request authorize activating tracking, blocking work, sending alerts or syncing private usage data into another vault? | Amounts reconcile to supplied synthetic counters and an explicitly supplied price table; estimates and observed bills remain separate; unknown coverage remains visible; no unauthorized activation/export or invented savings. |
+
+## Routing aliases
+
+Aliases retain their existing delegation and domain augmentation; they are not three additional professional capabilities or upgrades.
+
+| Alias | Canonical destination | Boundary |
+| --- | --- | --- |
+| [backend](https://github.com/buiphucminhtam/forgewright/blob/main/skills/backend/SKILL.md) | [software-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/software-engineer/SKILL.md) | Backend GROUND slots augment the destination. |
+| [frontend](https://github.com/buiphucminhtam/forgewright/blob/main/skills/frontend/SKILL.md) | [frontend-engineer](https://github.com/buiphucminhtam/forgewright/blob/main/skills/frontend-engineer/SKILL.md) | Frontend GROUND slots augment the destination. |
+| [forgewright](https://github.com/buiphucminhtam/forgewright/blob/main/skills/forgewright/SKILL.md) | production-grade entry workflow | Provider-neutral entry/preflight, no second orchestrator or bootstrap authority. |
+
+## Remaining high-impact proof gaps
+
+- Game/engine work: Phaser pool ownership/restarts, AI tier clocks, Godot reconciliation and transport API compatibility, XR geometry/grab boundaries. Roblox receipt grants require their payment authority, persistence and replay evidence before repair.
+- Player experience: accessible combobox/focus states, WCAG reference accuracy, nested audio settings and LiveOps assignment fairness. A source/DOM fixture alone cannot certify screen-reader or player outcomes.
+- Quality/operations: fabricated performance report examples, secret-disclosing diagnostic commands, fail-open test/build samples and SLO phase-window consistency. Verify with synthetic secrets and actual exit/error paths; do not run secret-dumping examples on a real environment.
+- AI/data: concurrent-index transaction examples, unsupported dry-run claims, proxy reward metrics, pass@k aggregation and chunk/source-offset integrity. Use an actual applicable DB/model workload before claiming outcome gains.
+- Product/framework: checkout telemetry/privacy, experiment stopping rules, skill scaffold/eval gates, opt-in memory/instinct authority and label-dependent compaction evaluation. Preserve payment, privacy and learning authority; hold rewrites without behavioral evidence.
+
+Applicable primary references include [PostgreSQL concurrent indexes](https://www.postgresql.org/docs/current/sql-createindex.html), [WCAG 2.2](https://www.w3.org/TR/WCAG22/), [OWASP Logging](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html), [Plausible custom properties](https://plausible.io/docs/custom-props/introduction), [DSPy metrics](https://dspy.ai/learn/evaluation/metrics/) and the [Agent Skills specification](https://agentskills.io/specification). Their applicability does not itself authorize an upgrade or prove one.
+
+The existing [Research Gate](../skills/_shared/protocols/research-gate.md), [QA oracle/value contract](../skills/_shared/protocols/qa-test-protocol.md) and [game evolution workflow](../workflows/game-skill-evolution.md) retain their own scope and gates. This catalog installs no scheduler, runtime, provider, browser, emulator or autonomous learning authority.

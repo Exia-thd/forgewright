@@ -478,6 +478,31 @@ components:
         total:
           type: integer
 
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  issue:
+                    type: string
+            requestId:
+              type: string
+          required:
+            - code
+            - message
+
   responses:
     Unauthorized:
       description: Authentication required
@@ -520,30 +545,6 @@ components:
           schema:
             $ref: '#/components/schemas/Error'
 
-    Error:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-            details:
-              type: array
-              items:
-                type: object
-                properties:
-                  field:
-                    type: string
-                  issue:
-                    type: string
-            requestId:
-              type: string
-          required:
-            - code
-            - message
 ```
 
 ### Standard Headers

@@ -24,11 +24,35 @@ You are the **MCP Generator Specialist** — an expert at creating project-speci
 
 ---
 
+## Bundled template runtime contract
+
+The bundled `templates/server.ts.hbs` and `templates/package.json.hbs` use
+GitNexus **1.6.12** and its declared Node range **`^22.18.0 || >=24.11.0`**.
+This narrows the previous generated package's `>=18` claim; validate the project's
+Node before generation. The server resolves the local GitNexus JavaScript
+entrypoint and invokes it with Node and an argument vector, with no shell.
+Tool text is a positional value after `--`, not a CLI option or command.
+
+The documented layout is `<project>/.forgewright/mcp-server/`. Resolve its
+workspace from the generated package root so direct `tsx server.ts` and compiled
+`node dist/server.js` target the same project. These changes affect newly
+generated servers; existing generated copies require project-owned regeneration
+and verification. The template's historical CLI-error-as-text behavior remains;
+an empty/degraded search is not proof of query quality.
+
+Register this project-specific server under a distinct project server name,
+using its verified absolute entry path and project-local dependencies. Preserve
+the shared `forgewright` registration. The bundled project server does not
+implement the shared installation's workspace dispatch; the shared-runtime
+examples below apply only to that installation.
+
 ## Critical Rules
 
-### Rule 1: One Canonical Server Per Installation
+### Rule 1: One Canonical Shared Server Per Installation
 
-The MCP server lives at exactly ONE location:
+The shared Forgewright installation's MCP server lives at exactly ONE location.
+This rule and the global examples below govern the shared runtime, not the
+separately named project server generated from the bundled template:
 
 ```bash
 # ❌ WRONG: Submodule paths in global configs
@@ -195,16 +219,17 @@ mkdir -p .forgewright/mcp-server
     "start": "tsx server.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "gitnexus": "1.6.12",
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
+    "@types/node": "^22.18.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^22.18.0 || >=24.11.0"
   }
 }
 ```
@@ -627,9 +652,13 @@ echo "Manifest generated at: $PROJECT_ROOT/.antigravity/mcp-manifest.json"
 
 ### Phase 6: Client Integration
 
-**Goal:** Generate client configuration snippets.
+**Goal:** Generate client configuration snippets. Sections 6.1–6.3 configure
+the shared Forgewright installation. For a bundled project-specific server,
+register a distinct name such as `<project-slug>-mcp`, with its verified absolute
+`server.ts` path and project-local `tsx`, or its verified compiled Node entry.
+Keep the existing shared registration; do not redirect it to a project entry.
 
-#### 6.1 Antigravity / Claude Desktop
+#### 6.1 Antigravity / Claude Desktop (shared installation)
 
 ```json
 // Add to ~/.claude/settings.json (mcpServers section)
@@ -648,7 +677,7 @@ echo "Manifest generated at: $PROJECT_ROOT/.antigravity/mcp-manifest.json"
 }
 ```
 
-#### 6.2 Cursor
+#### 6.2 Cursor (shared installation)
 
 ```json
 // Add to ~/.cursor/mcp.json
@@ -662,7 +691,7 @@ echo "Manifest generated at: $PROJECT_ROOT/.antigravity/mcp-manifest.json"
 }
 ```
 
-#### 6.3 VS Code
+#### 6.3 VS Code (shared installation)
 
 ```json
 // Add to settings.json
@@ -850,7 +879,8 @@ echo "Regeneration complete. Restart AI client to apply."
 
 | Mistake | Fix |
 |---------|-----|
-| Submodule path in global config | Use canonical `~/.forgewright/mcp-server/` |
+| Submodule path for the shared `forgewright` registration | Use the shared canonical `~/.forgewright/mcp-server/` |
+| Replacing the shared registration with a generated project server | Preserve the shared entry; register a distinct project name with its verified project entry |
 | Missing path validation | Always validate paths for `..` and `.git` |
 | No manifest for workspace | Create `.antigravity/mcp-manifest.json` |
 | Forgetting npm install | Always run `npm install` after generation |

@@ -15,7 +15,7 @@ version: 1.0.0
 ## SOLVE Step 3: DECOMPOSE (Game Engineer Domain Slots)
 Format: `n. ACTION | TARGET | CHECK`
 
-1. INTEGRATE | Code physics updates and core entity loops using delta-time scaling | Ensure frame rate independent calculations to prevent speed scaling fluctuations on varying monitors.
+1. INTEGRATE | Use the engine physics units; apply delta once to manually integrated displacement | Ensure frame rate independent calculations to prevent speed scaling fluctuations on varying monitors.
 2. POOL | Set up reusable object pools for high-frequency game entities (e.g., projectiles) | Verify that entities are recycled dynamically to minimize garbage collection stutter and CPU spikes.
 3. HARNESS | Implement custom collision systems and bounding-box overlap validation rules | Verify that collision sweeps are optimized to avoid nested O(n²) calculation bottlenecks.
 
@@ -33,7 +33,7 @@ engine-specialist role lenses locally unless the user explicitly requests
 delegation.
 
 ## Common Mistakes Checklist
-- **FPS-Dependent Physics Scaling**: Calculating physical movements (e.g., gravity, acceleration) without multiplying values by delta-time components, resulting in game speed shifts on different refresh rate monitors.
+- **FPS-Dependent Physics Scaling**: Integrating displacement without time, or multiplying an engine velocity API by delta again. Arcade velocity is pixels/second; its physics step already integrates time.
 - **Dynamic Entity Allocations (GC Spikes)**: Continually instantiating short-lived game objects (bullets, damage numbers, explosion visualizers) at runtime rather than utilizing a pre-allocated Object Pool, causing severe Garbage Collection pauses.
 - **Dangling Event Listeners**: Neglecting to unsubscribe keyboard, mouse, or controller listener handlers on scene teardown, producing cumulative memory leaks and duplicated input executions.
 - **Non-Compliant File Structures**: Creating game mechanics specs or documentation files under `docs/` using CamelCase, spaces, or uppercase naming patterns instead of strictly lowercase kebab-case (e.g., `bullet-physics-system.md`).
@@ -53,6 +53,7 @@ export class ProjectileManager {
   constructor(scene: Phaser.Scene) {
     // Ground: Initialize Arcade Physics group with pre-configured object pooling
     this.group = scene.physics.add.group({
+      classType: Phaser.Physics.Arcade.Image,
       defaultKey: 'bullet-texture',
       maxSize: 50, // Strict memory ceiling
       runChildUpdate: true
@@ -60,28 +61,29 @@ export class ProjectileManager {
   }
 
   // Fires projectile using frame-independent velocity configurations
-  public fireBullet(x: number, y: number, speed: number, deltaTime: number) {
-    const bullet = this.group.get(x, y);
+  public fireBullet(x: number, y: number, speed: number) {
+    const bullet = this.group.get(x, y) as Phaser.Physics.Arcade.Image | null;
     if (bullet) {
-      bullet.setActive(true);
-      bullet.setVisible(true);
-
-      // Verified: Scaled with frame delta-time to ensure hardware performance parity
-      const targetVelocity = speed * deltaTime;
-      bullet.body.setVelocityY(-targetVelocity);
+      // Re-enable and reset the body as well as the pooled image.
+      bullet.enableBody(true, x, y, true, true);
+      // Arcade integrates pixels/second itself; do not multiply by frame delta.
+      bullet.setVelocityY(-speed);
     }
   }
 
   // Recycle out-of-bounds projectiles to prevent memory leaks
   public update() {
-    this.group.getChildren().forEach((bullet: any) => {
+    this.group.getChildren().forEach((object) => {
+      const bullet = object as Phaser.Physics.Arcade.Image;
       if (bullet.active && bullet.y < 0) {
-        this.group.killAndHide(bullet);
+        bullet.disableBody(true, true);
       }
     });
   }
 }
 ```
+
+Arcade API basis: [velocity units](https://docs.phaser.io/api-documentation/class/physics-arcade-body#velocity) and [body enable/disable](https://docs.phaser.io/api-documentation/namespace/physics-arcade-components-enable). This is a projectile API example; rendered collision behavior and target-device frame time require engine tests.
 
 ## Runtime Lifecycle
 
