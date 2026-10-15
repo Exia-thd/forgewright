@@ -34,7 +34,7 @@ WINDOWS_NATIVE_HOOKS=false
 case "$(uname -s 2>/dev/null || true)" in
     MINGW*|MSYS*|CYGWIN*) WINDOWS_NATIVE_HOOKS=true ;;
 esac
-STOP_RUNTIME_FILES=(stop-gate.sh stop_gate.py continuity_check.py evidence_common.py windows_secure_io.py verify_gate.py)
+STOP_RUNTIME_FILES=(stop-gate.sh stop_gate.py turn_scope.py continuity_check.py evidence_common.py windows_secure_io.py verify_gate.py)
 
 # Colors
 RED='\033[0;31m'
@@ -374,6 +374,8 @@ PYEOF
 }
 
 repair_rule_context_runtime() {
+    local stop_runtime_was_current=false
+    if stop_runtime_is_current; then stop_runtime_was_current=true; fi
     local source_hook="${SOURCE_ROOT}/scripts/lite/rule-context-hook.py"
     local source_windows_hook="${SOURCE_ROOT}/scripts/lite/codex-hook-windows.ps1"
     local source_manifest="${SOURCE_ROOT}/kernel/rule-manifest.json"
@@ -424,6 +426,8 @@ PYEOF
     fi
     if ! mkdir -p "$target_runtime" "$target_kernel" \
         || ! cp "$source_hook" "$target_runtime/rule-context-hook.py" \
+        || ! cp "${SOURCE_ROOT}/scripts/lite/turn_scope.py" "$target_runtime/turn_scope.py" \
+        || ! cp "${SOURCE_ROOT}/scripts/lite/evidence_common.py" "$target_runtime/evidence_common.py" \
         || ! cp "$source_windows_hook" "$target_runtime/codex-hook-windows.ps1" \
         || ! cp "$source_manifest" "$target_kernel/rule-manifest.json" \
         || ! chmod +x "$target_runtime/rule-context-hook.py"; then
@@ -431,6 +435,9 @@ PYEOF
         return 1
     fi
     RULE_CONTEXT_RUNTIME_READY=true
+    if [[ "$stop_runtime_was_current" == "false" ]] && stop_runtime_is_current; then
+        log_pass "Stop runtime dependency closure repaired with rule context runtime"
+    fi
     log_pass "Rule context runtime repaired in framework install"
     return 0
 }
@@ -621,7 +628,7 @@ rule_context_doctor_codex() {
     local auto_fix="$6"
     local result
     file="$(host_path "$file")" || return 1
-    if result="$(CONTEXT_SESSION_CMD="$session_command" CONTEXT_SUBAGENT_CMD="$subagent_command" CONTEXT_SESSION_WINDOWS_CMD="$session_windows_command" CONTEXT_SUBAGENT_WINDOWS_CMD="$subagent_windows_command" FORGEWRIGHT_DIR="$FRAMEWORK_DIR" run_python - "$file" "$auto_fix" <<'PYEOF'
+    if result="$(CONTEXT_PROMPT_CMD="$(rule_context_command CODEX UserPromptSubmit)" CONTEXT_PROMPT_WINDOWS_CMD="$(codex_lifecycle_windows_command "${FRAMEWORK_DIR}/scripts/lite/codex-hook-windows.ps1" UserPromptSubmit)" CONTEXT_SESSION_CMD="$session_command" CONTEXT_SUBAGENT_CMD="$subagent_command" CONTEXT_SESSION_WINDOWS_CMD="$session_windows_command" CONTEXT_SUBAGENT_WINDOWS_CMD="$subagent_windows_command" FORGEWRIGHT_DIR="$FRAMEWORK_DIR" run_python - "$file" "$auto_fix" <<'PYEOF'
 import json
 import os
 import posixpath
@@ -635,6 +642,10 @@ from pathlib import Path
 path = Path(sys.argv[1])
 should_fix = sys.argv[2] == "true"
 commands = {
+    "UserPromptSubmit": (
+        os.environ["CONTEXT_PROMPT_CMD"],
+        os.environ["CONTEXT_PROMPT_WINDOWS_CMD"],
+    ),
     "SessionStart": (
         os.environ["CONTEXT_SESSION_CMD"],
         os.environ["CONTEXT_SESSION_WINDOWS_CMD"],

@@ -266,47 +266,15 @@ install_skills() {
 
 install_mcp() {
     local dry_run="$1"
-    local source_dir="${FORGEWRIGHT_SOURCE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 
     log_header "Installing MCP Server"
-
-    local mcp_source="$source_dir/.forgewright/mcp-server"
-    local mcp_dest="$FORGEWRIGHT_DIR/mcp-server"
-
     if [[ "$dry_run" == "true" ]]; then
-        echo "  [DRY RUN] Would install MCP server to: $mcp_dest"
+        echo "  [DRY RUN] MCP installation is deferred to receipt-owned full bootstrap"
         return
     fi
-
-    if [[ -d "$mcp_source" ]]; then
-        mkdir -p "$(dirname "$mcp_dest")"
-        if [[ -d "$mcp_dest" ]]; then
-            log_warn "MCP server already exists (skipping)"
-        else
-            cp -r "$mcp_source" "$mcp_dest"
-            log_success "Installed MCP server"
-        fi
-    else
-        log_warn "MCP server source not found at: $mcp_source"
-    fi
-
-    echo ""
-    log_info "Setting up MCP configurations..."
-
-    # Setup for Claude Code
-    if command -v claude &> /dev/null || [[ -f "$HOME/.claude/settings.json" ]]; then
-        log_info "Setting up Claude Code MCP..."
-        "$source_dir/scripts/forgewright-mcp-setup.sh" --claude-code 2>/dev/null || true
-    fi
-
-    # Setup for Cursor
-    if command -v cursor &> /dev/null || [[ -f "$HOME/.cursor/mcp.json" ]]; then
-        log_info "Setting up Cursor MCP..."
-        "$source_dir/scripts/forgewright-mcp-setup.sh" --cursor 2>/dev/null || true
-    fi
-
-    log_success "MCP configuration complete"
-    echo ""
+    # The historical .forgewright/mcp-server copy has no shared asset receipt
+    # or reconnect fence. Never install it or enable clients through this lane.
+    log_warn "Legacy MCP copy/configuration deferred: use receipt-owned full bootstrap (forge bootstrap policy / ensure)."
 }
 
 install_config() {
@@ -711,7 +679,7 @@ install_hooks() {
     local context_hook="${FORGEWRIGHT_DIR}/scripts/lite/rule-context-hook.py"
     local context_workspace="${FORGEWRIGHT_DIR}"
     local gate_runtime_file
-    for gate_runtime_file in stop-gate.sh stop_gate.py continuity_check.py evidence_common.py windows_secure_io.py \
+    for gate_runtime_file in stop-gate.sh stop_gate.py turn_scope.py continuity_check.py evidence_common.py windows_secure_io.py \
         gemini-before-tool-gate.sh antigravity-pre-tool-gate.sh verify-gate.sh verify_gate.py \
         run-check.sh run_check.py rule-validator.py rule-ledger.sh policy-check.sh telemetry.sh; do
         atomic_copy_file "${source_dir}/scripts/lite/${gate_runtime_file}" "${gate_runtime_dir}/${gate_runtime_file}"
@@ -1343,7 +1311,7 @@ HOOKBLOCK
             echo "command = ${codex_stop_toml}"
         } | atomic_write_text "$codex_file"
     fi
-    CONTEXT_SESSION_CMD="$codex_session_cmd" CONTEXT_SUBAGENT_CMD="$codex_subagent_cmd" CONTEXT_SESSION_WINDOWS_CMD="$codex_session_windows_cmd" CONTEXT_SUBAGENT_WINDOWS_CMD="$codex_subagent_windows_cmd" FORGEWRIGHT_DIR="$FORGEWRIGHT_DIR" "${PYTHON_CMD[@]}" - "$codex_file_host" <<'PYEOF'
+    CONTEXT_PROMPT_CMD="$(rule_context_command "$context_hook" "$context_workspace" CODEX UserPromptSubmit)" CONTEXT_PROMPT_WINDOWS_CMD="$(codex_lifecycle_windows_command "$gate_runtime_dir/codex-hook-windows.ps1" UserPromptSubmit)" CONTEXT_SESSION_CMD="$codex_session_cmd" CONTEXT_SUBAGENT_CMD="$codex_subagent_cmd" CONTEXT_SESSION_WINDOWS_CMD="$codex_session_windows_cmd" CONTEXT_SUBAGENT_WINDOWS_CMD="$codex_subagent_windows_cmd" FORGEWRIGHT_DIR="$FORGEWRIGHT_DIR" "${PYTHON_CMD[@]}" - "$codex_file_host" <<'PYEOF'
 import json
 import os
 import posixpath
@@ -1450,6 +1418,11 @@ def replace_context_blocks(value, event, matcher, command, windows_command):
     return value
 
 for event, matcher, command, windows_command in (
+    (
+        "UserPromptSubmit", "*",
+        os.environ["CONTEXT_PROMPT_CMD"],
+        os.environ["CONTEXT_PROMPT_WINDOWS_CMD"],
+    ),
     (
         "SessionStart",
         "startup|resume|clear|compact",

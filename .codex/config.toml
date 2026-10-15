@@ -5,6 +5,14 @@ hooks = true
 
 [hooks]
 
+[[hooks.UserPromptSubmit]]
+matcher = "*"
+[[hooks.UserPromptSubmit.hooks]]
+type = "command"
+command = "bash -c 'root=\"$(git rev-parse --show-toplevel 2>/dev/null)\" || exit 0; command -v python3 >/dev/null 2>&1 || exit 0; python3 \"$root/scripts/lite/rule-context-hook.py\" --workspace \"$root\" --platform CODEX --event UserPromptSubmit || true'"
+command_windows = '''powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "$root = (& git rev-parse --show-toplevel 2>$null | Select-Object -First 1); if (-not $root) { exit 0 }; & (Join-Path $root 'scripts/lite/codex-hook-windows.ps1') -EventName UserPromptSubmit -ProjectRoot $root; exit $LASTEXITCODE"'''
+timeout = 2
+
 [[hooks.SessionStart]]
 matcher = "startup|resume|clear|compact"
 [[hooks.SessionStart.hooks]]

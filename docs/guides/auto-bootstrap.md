@@ -109,6 +109,28 @@ Pi readiness still requires the selected model and enabled/ready flags.
 
 The shared MCP installation includes a regular copy of the canonical skills and the policy-checker/telemetry scripts needed at startup. It owns those individual scripts while preserving other files in the shared script directory. An explicit `ensure` or `repair` can migrate an unchanged, owned installation to the selected source revision after verifying runtime quiescence. Automatic migration additionally requires `--auto-update`. Migration preserves mutable guard state, including leases, project registrations, mode and logs; foreign or modified assets block replacement.
 
+The legacy shell installer's direct MCP copy/configuration lane is deferred
+with an explicit warning. Use receipt-owned full bootstrap for MCP installation;
+the shell installer continues installing its other selected components.
+
+Migration and repair hold the MCP admission lock from before the quiescence
+check through runtime publication. MCP startup reconciliation and lease creation
+take the same lock, so automatic client reconnects cannot enter that window.
+Open clients still have to close normally; the installer does not kill them or
+declare their leases closed. Another admission owner blocks maintenance, and a
+failed install releases only its own unchanged lock. A crashed owner leaves a
+fail-closed lock requiring explicit owner/process reconciliation.
+
+This protocol is cooperative: older installed clients do not honor the new
+admission lock. A receipt-owned MCP runtime must advertise
+`create-exclusive-v1` in its hashed `runtime-capabilities.json`; an existing
+legacy installation is refused with `runtime_maintenance_upgrade_required`.
+Its first upgrade requires an offline host maintenance window with automatic
+client restarts stopped, existing leases reconciled and installation ownership
+preserved. Do not add capability metadata to old code to bypass this gate.
+Source tests do not establish that the currently installed runtime or any
+consuming project has been upgraded.
+
 An older shared installation without the current asset receipt cannot be adopted
 by `ensure` or `repair`. Preserve its bytes and mutable guard state in a separate
 local recovery backup before explicitly reconciling occupied destinations. Do

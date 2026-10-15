@@ -269,6 +269,22 @@ A success claim must satisfy the kernel `VERIFY` contract. Higher-tier model out
 
 ## Evidence schema v2
 
+Codex `UserPromptSubmit` captures a private baseline keyed by the host session
+and turn before work starts. On POSIX hosts, Stop compares file content, mode,
+index state and commits against that baseline: unchanged earlier dirty files do
+not turn a status-only answer into code-change completion. New edits, staging,
+deletions, committed changes and explicit payload file lists remain in scope.
+An explicit verification claim still requires correlated evidence. This narrows
+admission only; it does not change the full-tree evidence fingerprint below.
+
+Missing, expired, unsafe or mismatched baselines retain the conservative whole
+worktree gate. Prompt-hook failures emit `[FORGEWRIGHT-TURN-SCOPE]` diagnostics
+without prompt contents. Baselines are bounded, create-once per turn and use
+no-follow directory/file handles. Native Windows currently retains conservative
+admission because this baseline backend requires POSIX descriptor-relative I/O.
+The local same-user baseline is correlation data, not authenticated proof of
+who edited a file. Changed native hook definitions need normal host trust review.
+
 Code-change completion is fail-closed and exact-turn correlated:
 
 1. Each material acceptance ID and claim maps to exact concrete project-owned

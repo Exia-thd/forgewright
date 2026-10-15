@@ -654,6 +654,19 @@ def run_hook(
         if not isinstance(payload, dict):
             raise ValueError("hook payload must be a JSON object")
         root = _workspace_root(workspace)
+        if event == "UserPromptSubmit":
+            from turn_scope import capture_turn
+
+            try:
+                capture_turn(root, payload)
+            except Exception as error:
+                # Admission remains conservative; expose the missing baseline
+                # without logging prompts, paths, or host credentials.
+                sys.stderr.write(
+                    f"[FORGEWRIGHT-TURN-SCOPE] unavailable:{type(error).__name__}; Stop uses worktree scope\n"
+                )
+            _allow_output(platform, event)
+            return 0
         manifest = load_manifest(root)
         selected = select_rules(manifest, platform, event)
         result = build_context(

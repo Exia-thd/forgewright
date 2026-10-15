@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash, randomBytes } from 'node:crypto';
-import { chmod, mkdir, open, readFile, readdir, rename, rm, unlink } from 'node:fs/promises';
+import { chmod, lstat, mkdir, open, readFile, readdir, rename, rm, unlink } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
@@ -180,24 +180,25 @@ export class LifecycleLeaseStore {
     ) {
       throw new Error('invalid_lease_input');
     }
-    await this.ensureRoot();
-    const now = this.now();
-    const lease: LifecycleLease = {
-      schema: LEASE_SCHEMA,
-      leaseId: `mcp-${randomBytes(16).toString('hex')}`,
-      ownerToken: randomBytes(32).toString('hex'),
-      version: 1,
-      workspaceId: input.workspaceId,
-      sessionId: input.sessionId,
-      identity: { ...input.identity },
-      commandDigest: input.identity.commandDigest,
-      issuedAtMs: now,
-      expiresAtMs: now + input.ttlMs,
-      inFlight: input.inFlight ?? 0,
-      status: 'open',
-    };
-    await this.atomicWrite(lease);
-    return lease;
+    return this.withLock('mcp-admission', async () => {
+      const now = this.now();
+      const lease: LifecycleLease = {
+        schema: LEASE_SCHEMA,
+        leaseId: `mcp-${randomBytes(16).toString('hex')}`,
+        ownerToken: randomBytes(32).toString('hex'),
+        version: 1,
+        workspaceId: input.workspaceId,
+        sessionId: input.sessionId,
+        identity: { ...input.identity },
+        commandDigest: input.identity.commandDigest,
+        issuedAtMs: now,
+        expiresAtMs: now + input.ttlMs,
+        inFlight: input.inFlight ?? 0,
+        status: 'open',
+      };
+      await this.atomicWrite(lease);
+      return lease;
+    });
   }
 
   async handoff(
@@ -290,30 +291,32 @@ export class LifecycleLeaseStore {
   }
 
   async reconcile(): Promise<Array<{ leaseId: string; result: ReapResult | 'reconcile_error' }>> {
-    await this.ensureRoot();
-    const entries = await readdir(this.root, { withFileTypes: true });
-    const leaseIds = entries
-      .filter((entry) => entry.isFile() && /^mcp-[a-f0-9]{32}\.json$/.test(entry.name))
-      .map((entry) => entry.name.slice(0, -'.json'.length))
-      .sort();
-    const results: Array<{ leaseId: string; result: ReapResult | 'reconcile_error' }> = [];
-    for (const leaseId of leaseIds) {
-      const lease = await this.readLease(leaseId);
-      if (lease === null || lease.status !== 'open') continue;
-      try {
-        // Startup must not wait behind another owner's lease lock. The same
-        // guarded reaper still handles every lease whose lock we acquire.
-        const result = await this.withLock(
-          leaseId,
-          () => this.reapWithinLock(leaseId, lease.ownerToken),
-          false,
-        );
-        results.push({ leaseId, result });
-      } catch {
-        results.push({ leaseId, result: 'reconcile_error' });
+    return this.withLock('mcp-admission', async () => {
+      await this.ensureRoot();
+      const entries = await readdir(this.root, { withFileTypes: true });
+      const leaseIds = entries
+        .filter((entry) => entry.isFile() && /^mcp-[a-f0-9]{32}\.json$/.test(entry.name))
+        .map((entry) => entry.name.slice(0, -'.json'.length))
+        .sort();
+      const results: Array<{ leaseId: string; result: ReapResult | 'reconcile_error' }> = [];
+      for (const leaseId of leaseIds) {
+        const lease = await this.readLease(leaseId);
+        if (lease === null || lease.status !== 'open') continue;
+        try {
+          // Startup must not wait behind another owner's lease lock. The same
+          // guarded reaper still handles every lease whose lock we acquire.
+          const result = await this.withLock(
+            leaseId,
+            () => this.reapWithinLock(leaseId, lease.ownerToken),
+            false,
+          );
+          results.push({ leaseId, result });
+        } catch {
+          results.push({ leaseId, result: 'reconcile_error' });
+        }
       }
-    }
-    return results;
+      return results;
+    });
   }
 
   private validateSignalTarget(
@@ -424,11 +427,25 @@ export class LifecycleLeaseStore {
       }
     }
     if (handle === undefined) throw new Error('lease_lock_timeout');
+    const owned = await handle.stat();
+    let actionFailed = false;
     try {
       return await action();
+    } catch (error) {
+      actionFailed = true;
+      throw error;
     } finally {
       await handle.close();
-      await unlink(lockPath).catch(() => undefined);
+      try {
+        const current = await lstat(lockPath);
+        if (!current.isFile() || current.dev !== owned.dev || current.ino !== owned.ino) {
+          throw new Error('lease_lock_ownership_changed');
+        }
+        await unlink(lockPath);
+      } catch (error) {
+        // Never remove a replacement owner's lock or hide the action failure.
+        if (!actionFailed) throw error;
+      }
     }
   }
 }

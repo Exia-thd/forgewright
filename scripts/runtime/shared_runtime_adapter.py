@@ -12,7 +12,9 @@ import platform
 import re
 import shutil
 import stat
+import sys
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Callable
 
@@ -29,6 +31,56 @@ RLG_FILES = (
 RLG_DIRECTORIES = ("locks", "logs")
 MAX_TREE_ENTRIES = 100_000
 MAX_TREE_BYTES = 2 * 1024 * 1024 * 1024
+MCP_ADMISSION_LOCK = "mcp-admission.lock"
+
+
+@contextmanager
+def runtime_maintenance(*, home: Path):
+    """Fence new MCP leases for the complete quiescence/publish interval.
+
+    The same create-exclusive lock is taken by LifecycleLeaseStore.acquire.
+    Existing clients retain ownership and must close normally. An interrupted
+    owner leaves a fail-closed lock for explicit operator reconciliation.
+    """
+    lease_root = home / ".forgewright/runtime/mcp-leases"
+    _safe_directory(lease_root)
+    lease_root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    _safe_managed_root(lease_root)
+    path = lease_root / MCP_ADMISSION_LOCK
+    try:
+        descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError as error:
+        raise SharedRuntimeError(
+            "runtime_maintenance_busy",
+            "MCP startup or maintenance owns the admission lock",
+        ) from error
+    identity = os.fstat(descriptor)
+    try:
+        os.write(
+            descriptor,
+            json.dumps({"pid": os.getpid(), "token": uuid.uuid4().hex}).encode(),
+        )
+        os.fsync(descriptor)
+        yield (identity.st_dev, identity.st_ino)
+    finally:
+        os.close(descriptor)
+        failure = sys.exception()
+        try:
+            current = path.lstat()
+            if (current.st_dev, current.st_ino) != (identity.st_dev, identity.st_ino):
+                raise SharedRuntimeError(
+                    "runtime_maintenance_ownership_changed",
+                    "MCP admission lock ownership changed; preserving the replacement",
+                )
+            path.unlink()
+        except (OSError, SharedRuntimeError) as error:
+            cleanup_error = SharedRuntimeError(
+                "runtime_maintenance_ownership_changed",
+                f"Cannot release the owned MCP admission lock: {error}",
+            )
+            if failure is None:
+                raise cleanup_error from error
+            failure.add_note(str(cleanup_error))
 
 
 class SharedRuntimeError(RuntimeError):
@@ -932,7 +984,12 @@ def install_shared_runtime(
         staged_lite.mkdir()
         for name in ("policy-check.sh", "telemetry.sh"):
             shutil.copy2(root / "scripts/lite" / name, staged_lite / name)
-        for name in ("package.json", "package-lock.json", "tsconfig.json"):
+        for name in (
+            "package.json",
+            "package-lock.json",
+            "tsconfig.json",
+            "runtime-capabilities.json",
+        ):
             shutil.copy2(root / "mcp" / name, staged_mcp / name)
         shutil.copytree(root / "mcp/src", staged_mcp / "src", symlinks=False)
         shutil.copytree(root / "skills", staged_skills, symlinks=False)
@@ -1154,12 +1211,40 @@ def assert_runtime_quiescent(
     home: Path,
     rlg_home: Path,
     runner: Callable[..., dict[str, Any]],
+    maintenance_identity: tuple[int, int] | None = None,
+    require_mcp_admission: bool = False,
 ) -> None:
+    installed = home / ".forgewright/mcp-server"
+    if require_mcp_admission and os.path.lexists(installed):
+        capability = installed / "runtime-capabilities.json"
+        _safe_regular(capability)
+        try:
+            with capability.open("rb") as handle:
+                value = json.loads(handle.read(4097))
+            supported = value == {
+                "schema": "forgewright-mcp-runtime-capabilities/v1",
+                "maintenance_admission": "create-exclusive-v1",
+            }
+        except (OSError, ValueError):
+            supported = False
+        if not supported:
+            raise SharedRuntimeError(
+                "runtime_maintenance_upgrade_required",
+                "Legacy MCP cannot fence automatic reconnects; an offline host upgrade with client autostart stopped is required",
+            )
     lease_root = home / ".forgewright/runtime/mcp-leases"
     if lease_root.exists():
         _safe_managed_root(lease_root)
         for path in lease_root.iterdir():
             _safe_regular(path)
+            if path.name == MCP_ADMISSION_LOCK:
+                info = path.lstat()
+                if maintenance_identity == (info.st_dev, info.st_ino):
+                    continue
+                raise SharedRuntimeError(
+                    "runtime_not_quiescent",
+                    "MCP admission is owned by another operation",
+                )
             if not path.is_file() or path.suffix != ".json":
                 raise SharedRuntimeError(
                     "runtime_not_quiescent", f"unrecognized MCP lease state: {path}"

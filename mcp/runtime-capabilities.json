@@ -1,0 +1,4 @@
+{
+  "schema": "forgewright-mcp-runtime-capabilities/v1",
+  "maintenance_admission": "create-exclusive-v1"
+}

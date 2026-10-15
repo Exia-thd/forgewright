@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("SessionStart", "SubagentStart", "Stop")]
+    [ValidateSet("SessionStart", "SubagentStart", "UserPromptSubmit", "Stop")]
     [string]$EventName,
 
     [string]$ProjectRoot

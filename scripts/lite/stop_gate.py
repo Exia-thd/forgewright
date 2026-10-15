@@ -64,6 +64,7 @@ except ImportError:  # An older global install must preserve the old Stop path.
 
 
 from verify_gate import _check_stubs, _find_evidence, changed_files
+from turn_scope import files_changed_this_turn
 
 
 SCHEMA = "forgewright-stop-decision/v1"
@@ -223,7 +224,11 @@ def _is_docs_continuity_path(value: str, material_paths: tuple[str, ...] = ()) -
 
 
 def _files_to_check(root: Path, payload: dict[str, Any]) -> list[str]:
-    combined = [*_payload_files(payload), *changed_files(root)]
+    scoped = files_changed_this_turn(root, payload)
+    combined = [
+        *_payload_files(payload),
+        *(changed_files(root) if scoped is None else scoped),
+    ]
     return list(dict.fromkeys(value for value in combined if value))
 
 
@@ -672,7 +677,10 @@ def _emit_allow(
         payload: dict[str, Any] = {"continue": True}
         if typed:
             if native:
-                print("[FORGEWRIGHT-STOP] " + json.dumps(decision, sort_keys=True), file=sys.stderr)
+                print(
+                    "[FORGEWRIGHT-STOP] " + json.dumps(decision, sort_keys=True),
+                    file=sys.stderr,
+                )
                 if os.environ.get("FORGEWRIGHT_STOP_DIAGNOSTICS") == "1":
                     metadata = json.dumps(decision, sort_keys=True)
                     if len(metadata.encode("utf-8")) <= 1024:
@@ -696,7 +704,10 @@ def _emit_block(
         payload: dict[str, Any] = {"decision": "block", "reason": reason[:512]}
         if typed:
             if native:
-                print("[FORGEWRIGHT-STOP] " + json.dumps(decision, sort_keys=True), file=sys.stderr)
+                print(
+                    "[FORGEWRIGHT-STOP] " + json.dumps(decision, sort_keys=True),
+                    file=sys.stderr,
+                )
                 if os.environ.get("FORGEWRIGHT_STOP_DIAGNOSTICS") == "1":
                     metadata = json.dumps(decision, sort_keys=True)
                     if len(metadata.encode("utf-8")) <= 1024:
@@ -788,14 +799,15 @@ def main() -> int:
             native=platform == "CODEX",
         )
     root = _project_root()
-    payload = _normalize_payload(root, _parse_payload(raw))
+    raw_payload = _parse_payload(raw)
+    files = _files_to_check(root, raw_payload)
+    payload = _normalize_payload(root, raw_payload)
     payload["platform"] = platform
     # The native host rejects custom top-level fields. Keep the typed decision
     # on stderr while preserving the existing verifier/CLI output contract.
     native = platform == "CODEX" and payload.get("hook_event_name") == "Stop"
     emit_allow = partial(_emit_allow, native=native)
     emit_block = partial(_emit_block, native=native)
-    files = _files_to_check(root, payload)
     continuity: ContinuityResult = check_continuity(root, payload, files=files)
     if continuity.status == "retry":
         return emit_block(

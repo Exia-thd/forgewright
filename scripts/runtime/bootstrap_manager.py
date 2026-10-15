@@ -25,7 +25,7 @@ import uuid
 import threading
 import tomllib
 from contextvars import ContextVar
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -40,6 +40,7 @@ from shared_runtime_adapter import (  # noqa: E402
     begin_shared_runtime,
     install_shared_runtime,
     recover_shared_runtime,
+    runtime_maintenance,
     shared_runtime_receipt_digest,
     verify_shared_runtime,
 )
@@ -2588,65 +2589,74 @@ def ensure_global_runtime(
                         if operation in {"migrate", "repair"} and asset_receipt
                         else need_mcp
                     )
-                    if operation in {"migrate", "repair"}:
-                        if operation == "migrate" and verify_shared_runtime(
-                            asset_receipt
-                        ):
-                            raise BootstrapError(
-                                "runtime_asset_drift",
-                                "owned shared runtime drift blocks migration",
+                    with (
+                        runtime_maintenance(home=Path.home())
+                        if operation in {"migrate", "repair"}
+                        else nullcontext()
+                    ) as maintenance_identity:
+                        if operation in {"migrate", "repair"}:
+                            if operation == "migrate" and verify_shared_runtime(
+                                asset_receipt
+                            ):
+                                raise BootstrapError(
+                                    "runtime_asset_drift",
+                                    "owned shared runtime drift blocks migration",
+                                )
+                            assert_runtime_quiescent(
+                                root=root,
+                                home=Path.home(),
+                                rlg_home=Path(os.path.abspath(rlg_home)),
+                                runner=run,
+                                maintenance_identity=maintenance_identity,
+                                require_mcp_admission=bool(
+                                    asset_receipt and asset_receipt.get("mcp")
+                                ),
                             )
-                        assert_runtime_quiescent(
+                        _record_process(
+                            global_runtime_asset_home=str(Path.home()),
+                            global_runtime_asset_rlg_home=str(
+                                Path(os.path.abspath(rlg_home))
+                            ),
+                            global_runtime_asset_source_root=str(root),
+                            **(
+                                {
+                                    "global_runtime_prior_asset_receipt_sha256": shared_runtime_receipt_digest(
+                                        asset_receipt
+                                    )
+                                }
+                                if operation in {"migrate", "repair"} and asset_receipt
+                                else {}
+                            ),
+                        )
+                        asset_transaction = begin_shared_runtime(
                             root=root,
                             home=Path.home(),
                             rlg_home=Path(os.path.abspath(rlg_home)),
-                            runner=run,
+                            progress_path=_shared_runtime_progress_path(),
+                            source_commit=commit,
+                            need_rlg=install_rlg,
+                            need_mcp=install_mcp,
+                            project_transaction_id=tracking[1]["transaction_id"],
+                            project_root_digest=root_digest(tracking[0]),
+                            write_json=atomic_json,
+                            operation=operation,
+                            prior_receipt=(
+                                asset_receipt
+                                if operation in {"migrate", "repair"}
+                                else None
+                            ),
                         )
-                    _record_process(
-                        global_runtime_asset_home=str(Path.home()),
-                        global_runtime_asset_rlg_home=str(
-                            Path(os.path.abspath(rlg_home))
-                        ),
-                        global_runtime_asset_source_root=str(root),
-                        **(
-                            {
-                                "global_runtime_prior_asset_receipt_sha256": shared_runtime_receipt_digest(
-                                    asset_receipt
-                                )
-                            }
-                            if operation in {"migrate", "repair"} and asset_receipt
-                            else {}
-                        ),
-                    )
-                    asset_transaction = begin_shared_runtime(
-                        root=root,
-                        home=Path.home(),
-                        rlg_home=Path(os.path.abspath(rlg_home)),
-                        progress_path=_shared_runtime_progress_path(),
-                        source_commit=commit,
-                        need_rlg=install_rlg,
-                        need_mcp=install_mcp,
-                        project_transaction_id=tracking[1]["transaction_id"],
-                        project_root_digest=root_digest(tracking[0]),
-                        write_json=atomic_json,
-                        operation=operation,
-                        prior_receipt=(
-                            asset_receipt
-                            if operation in {"migrate", "repair"}
-                            else None
-                        ),
-                    )
-                    _record_process(
-                        global_runtime_asset_transaction_id=asset_transaction[
-                            "transaction_id"
-                        ]
-                    )
-                    asset_receipt = install_shared_runtime(
-                        asset_transaction,
-                        progress_path=_shared_runtime_progress_path(),
-                        runner=run,
-                        write_json=atomic_json,
-                    )
+                        _record_process(
+                            global_runtime_asset_transaction_id=asset_transaction[
+                                "transaction_id"
+                            ]
+                        )
+                        asset_receipt = install_shared_runtime(
+                            asset_transaction,
+                            progress_path=_shared_runtime_progress_path(),
+                            runner=run,
+                            write_json=atomic_json,
+                        )
                 except SharedRuntimeError as error:
                     raise BootstrapError(error.code, str(error)) from error
                 receipt["asset_receipt"] = asset_receipt
